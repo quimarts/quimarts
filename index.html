@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>QuimArts</title>
+<meta name="theme-color" content="#0f1117">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="QuimArts">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+:root {
+  --bg:#0f1117; --surface:#181c27; --card:#1e2334; --border:#2a3048;
+  --accent:#4f8ef7; --accent2:#38d9a9; --warn:#f5a623; --danger:#e05c5c;
+  --text:#e8ecf5; --muted:#6b7894; --label:#9ba8c4; --radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh;}
+/* TOPBAR */
+.topbar{position:fixed;top:0;left:0;right:0;height:56px;background:var(--surface);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;
+  padding:0 16px;gap:12px;z-index:100;}
+.topbar-logo{font-size:16px;font-weight:800;color:var(--accent);}
+.topbar-logo span{color:var(--accent2);}
+.topbar-title{font-size:15px;font-weight:600;flex:1;text-align:center;}
+/* CONTENIDO */
+.content{padding:16px;padding-top:72px;padding-bottom:80px;max-width:600px;margin:0 auto;}
+/* NAVBAR */
+.navbar{position:fixed;bottom:0;left:0;right:0;height:64px;background:var(--surface);
+  border-top:1px solid var(--border);display:flex;z-index:100;}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;cursor:pointer;color:var(--muted);font-size:11px;font-weight:500;
+  border:none;background:none;transition:color .15s;}
+.nav-btn.active{color:var(--accent);}
+.nav-btn .nav-icon{font-size:20px;}
+/* BOTONES GRANDES */
+.big-btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+.big-btn{background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:24px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;
+  cursor:pointer;transition:border-color .15s;width:100%;}
+.big-btn:active{border-color:var(--accent);}
+.big-btn .big-icon{font-size:36px;}
+.big-btn .big-label{font-size:15px;font-weight:700;}
+.big-btn.primary{border-color:rgba(79,142,247,.4);background:rgba(79,142,247,.08);}
+.big-btn.success{border-color:rgba(56,217,169,.4);background:rgba(56,217,169,.08);}
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
+.card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:14px;font-weight:700;}
+/* ALERTAS */
+.alert{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:8px;margin-bottom:10px;font-size:13px;}
+.alert-warn{background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);color:var(--warn);}
+.alert-danger{background:rgba(224,92,92,.1);border:1px solid rgba(224,92,92,.3);color:var(--danger);}
+/* LISTA */
+.list-item{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-bottom:1px solid rgba(42,48,72,.5);font-size:13px;cursor:pointer;}
+.list-item:last-child{border-bottom:none;}
+.list-item-left{display:flex;flex-direction:column;gap:3px;}
+.list-item-title{font-weight:600;}
+.list-item-sub{font-size:12px;color:var(--muted);}
+.list-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;}
+.badge-green{background:rgba(56,217,169,.15);color:var(--accent2);}
+.badge-warn{background:rgba(245,166,35,.15);color:var(--warn);}
+.badge-danger{background:rgba(224,92,92,.15);color:var(--danger);}
+.badge-blue{background:rgba(79,142,247,.15);color:var(--accent);}
+.badge-gray{background:rgba(107,120,148,.15);color:var(--label);}
+/* FORMULARIOS */
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.form-label{font-size:12px;color:var(--label);font-weight:600;}
+.form-input,.form-select{background:var(--surface);border:1px solid var(--border);
+  border-radius:7px;padding:11px 12px;color:var(--text);font-family:'Inter',sans-serif;
+  font-size:14px;outline:none;width:100%;transition:border-color .15s;}
+.form-input:focus,.form-select:focus{border-color:var(--accent);}
+.form-select option{background:var(--surface);}
+/* BOTONES */
+.btn{padding:12px 18px;border-radius:8px;border:none;cursor:pointer;
+  font-family:'Inter',sans-serif;font-size:14px;font-weight:600;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;transition:opacity .15s;}
+.btn:active{opacity:.8;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-success{background:var(--accent2);color:#0f1117;}
+.btn-ghost{background:var(--card);color:var(--label);border:1px solid var(--border);}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-sm{padding:8px 14px;font-size:13px;}
+.btn-row{display:flex;gap:10px;}
+.btn-row .btn{flex:1;}
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
+  z-index:200;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--card);border-radius:20px 20px 0 0;padding:24px 20px 32px;
+  width:100%;max-height:92vh;overflow-y:auto;animation:slideUp .25s;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:20px;padding-right:32px;}
+.modal-close{position:absolute;right:20px;top:20px;background:none;border:none;
+  color:var(--muted);font-size:24px;cursor:pointer;line-height:1;}
+.modal-inner{position:relative;}
+/* TOAST */
+.toast-wrap{position:fixed;top:70px;left:16px;right:16px;z-index:300;pointer-events:none;}
+.toast{background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:14px 16px;display:flex;align-items:center;gap:12px;
+  animation:slideDown .25s;margin-bottom:8px;pointer-events:all;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.toast.success{border-color:rgba(56,217,169,.4);}
+.toast.error{border-color:rgba(224,92,92,.4);}
+.toast.warn{border-color:rgba(245,166,35,.4);}
+/* MISC */
+.section-title{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;
+  letter-spacing:.5px;margin-bottom:10px;margin-top:4px;}
+.loading{text-align:center;padding:40px;color:var(--muted);font-size:13px;}
+.precio-preview{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px;}
+.precio-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;}
+.precio-row.total{font-weight:700;color:var(--accent2);border-top:1px solid var(--border);padding-top:8px;margin-top:4px;font-size:15px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">Quim<span>Arts</span></div>
+  <div class="topbar-title" id="page-title">Dashboard</div>
+  <div style="width:70px"></div>
+</div>
+
+<div class="content" id="content">
+  <div class="loading">Iniciando...</div>
+</div>
+
+<nav class="navbar">
+  <button class="nav-btn active" data-page="dashboard" onclick="navegar('dashboard')">
+    <span class="nav-icon">🏠</span>Inicio
+  </button>
+  <button class="nav-btn" data-page="insumos" onclick="navegar('insumos')">
+    <span class="nav-icon">🧪</span>Insumos
+  </button>
+  <button class="nav-btn" data-page="formulas" onclick="navegar('formulas')">
+    <span class="nav-icon">⚗️</span>Fórmulas
+  </button>
+  <button class="nav-btn" data-page="ventas" onclick="navegar('ventas')">
+    <span class="nav-icon">💰</span>Ventas
+  </button>
+  <button class="nav-btn" data-page="mas" onclick="navegar('mas')">
+    <span class="nav-icon">☰</span>Más
+  </button>
+</nav>
+
+<div class="modal-overlay" id="modal-overlay" onclick="cerrarModal(event)">
+  <div class="modal modal-inner" id="modal-content" onclick="event.stopPropagation()"></div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+// ── SUPABASE ──────────────────────────────────────────────
+const { createClient } = supabase
+const sb = createClient(
+  'https://uqpsmzesmwnaubisuwlx.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxcHNtemVzbXduYXViaXN1d2x4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5OTk1NzQsImV4cCI6MjA5NjU3NTU3NH0.3DtDxAfknBX9TDvgcu2IxFWyf1Se5RF0vZDuuHaJeZg'
+)
+
+// ── NAVEGACIÓN ────────────────────────────────────────────
+const titulos = {
+  dashboard:'Dashboard',insumos:'Insumos',formulas:'Fórmulas',
+  ventas:'Ventas',compras:'Compras',inventario:'Inventario',
+  clientes:'Clientes',reportes:'Reportes',mas:'Menú'
+}
+
+window.navegar = function(p) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === p))
+  document.getElementById('page-title').textContent = titulos[p] || p
+  renderPagina(p)
+}
+
+async function renderPagina(p) {
+  const c = document.getElementById('content')
+  c.innerHTML = '<div class="loading">Cargando...</div>'
+  const map = {
+    dashboard: renderDashboard,
+    insumos: renderInsumos,
+    formulas: renderFormulas,
+    ventas: renderVentas,
+    compras: renderCompras,
+    inventario: renderInventario,
+    clientes: renderClientes,
+    reportes: renderReportes,
+    mas: renderMas,
+  }
+  if (map[p]) await map[p]()
+  else c.innerHTML = '<div class="loading">Próximamente</div>'
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────
+async function renderDashboard() {
+  const [{ data: ins }, { data: prods }, { data: vendeuda }] = await Promise.all([
+    sb.from('insumos').select('stock,stock_minimo,nombre,tipo').eq('activo',true),
+    sb.from('productos').select('stock,stock_minimo,nombre,presentacion').eq('activo',true),
+    sb.from('ventas').select('id,cliente_libre,saldo_pendiente,clientes(nombre,apellido)').eq('estado_pago','debe')
+  ])
+
+  const insCriticos = ins?.filter(i => i.stock_minimo > 0 && (i.stock/i.stock_minimo)*100 < 10) || []
+  const insBajos = ins?.filter(i => i.stock_minimo > 0 && (i.stock/i.stock_minimo)*100 >= 10 && (i.stock/i.stock_minimo)*100 < 30) || []
+  const insMedios = ins?.filter(i => i.stock_minimo > 0 && (i.stock/i.stock_minimo)*100 >= 30 && (i.stock/i.stock_minimo)*100 < 50) || []
+  const prodsCriticos = prods?.filter(p => p.stock === 0) || []
+  const prodsBajos = prods?.filter(p => p.stock_minimo > 0 && p.stock > 0 && p.stock <= p.stock_minimo) || []
+  const totalAlertas = insCriticos.length + insBajos.length + insMedios.length + prodsCriticos.length + prodsBajos.length + (vendeuda?.length||0)
+
+  document.getElementById('content').innerHTML = `
+    <div class="big-btn-grid">
+      <button class="big-btn primary" onclick="navegar('ventas')">
+        <div class="big-icon">💰</div><div class="big-label">Vender</div>
+      </button>
+      <button class="big-btn success" onclick="navegar('inventario')">
+        <div class="big-icon">📦</div><div class="big-label">Inventario</div>
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">🔔 Alertas</span>
+        ${totalAlertas > 0 ? `<span class="badge badge-danger">${totalAlertas}</span>` : '<span class="badge badge-green">Todo OK</span>'}
+      </div>
+      ${totalAlertas === 0 ? '<div class="loading" style="padding:20px">Sin alertas por ahora 👍</div>' : ''}
+
+      ${insCriticos.length ? `
+        <div style="padding:10px 16px 4px;font-size:11px;color:var(--danger);font-weight:700;text-transform:uppercase;letter-spacing:.5px">
+          🔴 Insumos críticos (menos del 10%)
+        </div>
+        ${insCriticos.map(i=>`
+          <div class="list-item" onclick="navegar('insumos')">
+            <div class="list-item-left">
+              <div class="list-item-title">${i.nombre}</div>
+              <div class="list-item-sub">Stock: ${i.stock} · ${Math.round((i.stock/i.stock_minimo)*100)}% del volumen</div>
+            </div>
+            <span class="badge badge-danger">Crítico</span>
+          </div>`).join('')}` : ''}
+
+      ${insBajos.length ? `
+        <div style="padding:10px 16px 4px;font-size:11px;color:var(--danger);font-weight:700;text-transform:uppercase;letter-spacing:.5px">
+          🟠 Insumos bajos (10–29%)
+        </div>
+        ${insBajos.map(i=>`
+          <div class="list-item" onclick="navegar('insumos')">
+            <div class="list-item-left">
+              <div class="list-item-title">${i.nombre}</div>
+              <div class="list-item-sub">Stock: ${i.stock} · ${Math.round((i.stock/i.stock_minimo)*100)}% del volumen</div>
+            </div>
+            <span class="badge badge-danger">Bajo</span>
+          </div>`).join('')}` : ''}
+
+      ${insMedios.length ? `
+        <div style="padding:10px 16px 4px;font-size:11px;color:var(--warn);font-weight:700;text-transform:uppercase;letter-spacing:.5px">
+          🟡 Insumos medios (30–49%)
+        </div>
+        ${insMedios.map(i=>`
+          <div class="list-item" onclick="navegar('insumos')">
+            <div class="list-item-left">
+              <div class="list-item-title">${i.nombre}</div>
+              <div class="list-item-sub">Stock: ${i.stock} · ${Math.round((i.stock/i.stock_minimo)*100)}% del volumen</div>
+            </div>
+            <span class="badge badge-warn">Medio</span>
+          </div>`).join('')}` : ''}
+
+      ${prodsCriticos.length ? `
+        <div style="padding:10px 16px 4px;font-size:11px;color:var(--danger);font-weight:700;text-transform:uppercase;letter-spacing:.5px">
+          🔴 Productos sin stock
+        </div>
+        ${prodsCriticos.map(p=>`
+          <div class="list-item" style="cursor:default" onclick="navegar('inventario')">
+            <div class="list-item-left">
+              <div class="list-item-title">${p.nombre} ${p.presentacion}ml</div>
+              <div class="list-item-sub">Sin unidades disponibles</div>
+            </div>
+            <span class="badge badge-danger">Sin stock</span>
+          </div>`).join('')}` : ''}
+
+      ${prodsBajos.length ? `
+        <div style="padding:10px 16px 4px;font-size:11px;color:var(--warn);font-weight:700;text-transform:uppercase;letter-spacing:.5px">
+          🟡 Productos con stock bajo
+        </div>
+        ${prodsBajos.map(p=>`
+          <div class="list-item" style="cursor:default" onclick="navegar('inventario')">
+            <div class="list-item-left">
+              <div class="list-item-title">${p.nombre} ${p.presentacion}ml</div>
+              <div class="list-item-sub">Stock: ${p.stock} / Mín: ${p.stock_minimo}</div>
+            </div>
+            <span class="badge badge-warn">Bajo</span>
+          </div>`).join('')}` : ''}
+
+      ${vendeuda?.length ? `
+        <div style="padding:10px 16px 4px;font-size:11px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.5px">
+          💳 Ventas con saldo pendiente
+        </div>
+        ${vendeuda.map(vt=>{
+          const cli = vt.clientes ? `${vt.clientes.nombre} ${vt.clientes.apellido||''}` : (vt.cliente_libre||'Consumidor Final')
+          return `<div class="list-item" onclick="modalComprobante('${vt.id}')">
+            <div class="list-item-left">
+              <div class="list-item-title">${cli}</div>
+              <div class="list-item-sub">Saldo pendiente</div>
+            </div>
+            <span style="font-weight:700;color:var(--danger)">$${Number(vt.saldo_pendiente).toLocaleString('es-AR')}</span>
+          </div>`
+        }).join('')}` : ''}
+    </div>`
+}
+
+// ── INSUMOS ───────────────────────────────────────────────
+// Calcula estado según % de stock restante respecto al volumen de compra
+function estadoInsumo(stock, volumen) {
+  if (!volumen || volumen === 0) return ['gray','Sin volumen']
+  const pct = (stock / volumen) * 100
+  if (pct >= 50) return ['green','Normal']
+  if (pct >= 30) return ['warn','Medio']
+  if (pct >= 10) return ['danger','Bajo']
+  return ['danger','Crítico']
+}
+
+async function renderInsumos() {
+  const { data } = await sb.from('insumos').select('*').eq('activo',true).order('nombre')
+  document.getElementById('content').innerHTML = `
+    <button class="btn btn-primary" style="margin-bottom:16px" onclick="modalNuevoInsumo()">+ Nuevo insumo</button>
+    <div class="card">
+      ${!data?.length ? '<div class="loading">Sin insumos cargados</div>' : data.map(i => {
+        const est = estadoInsumo(i.stock, i.stock_minimo)
+        const pct = i.stock_minimo > 0 ? Math.round((i.stock/i.stock_minimo)*100) : 100
+        return `<div class="list-item" onclick="modalEditarInsumo('${i.id}')">
+          <div class="list-item-left">
+            <div class="list-item-title">${i.nombre}</div>
+            <div class="list-item-sub">${i.categoria||'—'} · PPU: $${Number(i.ppu).toFixed(4)} · ${pct}%</div>
+          </div>
+          <div class="list-item-right">
+            <span style="font-weight:700">${i.stock} uds</span>
+            <span class="badge badge-${est[0]}">${est[1]}</span>
+          </div>
+        </div>`
+      }).join('')}
+    </div>`
+}
+
+window.modalNuevoInsumo = function() {
+  abrirModal(`
+    <button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">🧪 Nuevo insumo</div>
+    <div class="form-group"><label class="form-label">Nombre *</label>
+      <input class="form-input" id="i-nom" placeholder="Ej: Ácido Cítrico"></div>
+    <div class="form-group"><label class="form-label">Categoría</label>
+      <input class="form-input" id="i-cat" placeholder="Ej: Ácidos, Solventes..."></div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Volumen de compra</label>
+        <input class="form-input" id="i-vol" type="number" placeholder="Ej: 5000" oninput="calcPPUInsumo()"></div>
+      <div class="form-group"><label class="form-label">Precio total ($)</label>
+        <input class="form-input" id="i-precio" type="number" placeholder="Ej: 5000" oninput="calcPPUInsumo()"></div>
+    </div>
+    <div id="i-ppu-preview" style="color:var(--accent2);font-size:13px;font-weight:600;margin-bottom:14px"></div>
+    <div class="form-group"><label class="form-label">Stock inicial (uds actuales)</label>
+      <input class="form-input" id="i-stock" type="number" placeholder="0" value="0"></div>
+    <button class="btn btn-primary" onclick="guardarInsumo()">Guardar insumo</button>
+  `)
+}
+
+window.calcPPUInsumo = function() {
+  const vol = parseFloat(document.getElementById('i-vol')?.value) || 0
+  const precio = parseFloat(document.getElementById('i-precio')?.value) || 0
+  const prev = document.getElementById('i-ppu-preview')
+  if (prev && vol && precio) {
+    prev.textContent = `PPU calculado: $${(precio/vol).toFixed(4)}`
+  } else if (prev) {
+    prev.textContent = ''
+  }
+}
+
+window.guardarInsumo = async function() {
+  const nom = v('i-nom')
+  if (!nom) { toast('error','El nombre es obligatorio'); return }
+  const vol = n('i-vol')
+  const precio = n('i-precio')
+  const ppu = vol && precio ? precio/vol : 0
+  const stock = n('i-stock') || vol
+  const { error } = await sb.from('insumos').insert({
+    nombre:nom, categoria:v('i-cat'), tipo:'insumo',
+    stock: stock,
+    stock_minimo: vol,
+    ppu: ppu
+  })
+  if (error) { toast('error','Error: '+error.message); return }
+  toast('success','Insumo guardado ✅')
+  cerrarModal(); renderInsumos()
+}
+
+window.modalEditarInsumo = async function(id) {
+  const { data: i } = await sb.from('insumos').select('*').eq('id',id).single()
+  const pct = i.stock_minimo > 0 ? Math.round((i.stock/i.stock_minimo)*100) : 0
+  const est = estadoInsumo(i.stock, i.stock_minimo)
+  abrirModal(`
+    <button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">✏️ ${i.nombre}</div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px">
+      <span class="badge badge-${est[0]}">${est[1]}</span>
+      <span style="font-size:13px;color:var(--muted)">Stock: ${i.stock} uds (${pct}% del volumen)</span>
+    </div>
+    <div class="form-group"><label class="form-label">Nombre</label>
+      <input class="form-input" id="ei-nom" value="${i.nombre}"></div>
+    <div class="form-group"><label class="form-label">Categoría</label>
+      <input class="form-input" id="ei-cat" value="${i.categoria||''}"></div>
+    <div class="form-group"><label class="form-label">Stock actual (uds)</label>
+      <input class="form-input" id="ei-stock" type="number" value="${i.stock}"></div>
+    <div class="form-group"><label class="form-label">Volumen de compra (referencia para %)</label>
+      <input class="form-input" id="ei-vol" type="number" value="${i.stock_minimo||0}"></div>
+    <div class="form-group"><label class="form-label">PPU actual</label>
+      <input class="form-input" id="ei-ppu" type="number" value="${i.ppu}" step="0.0001"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="actualizarInsumo('${id}')">Guardar cambios</button>
+      <button class="btn btn-danger btn-sm" style="flex:0.4" onclick="eliminarInsumo('${id}')">🗑</button>
+    </div>
+  `)
+}
+
+window.actualizarInsumo = async function(id) {
+  const { error } = await sb.from('insumos').update({
+    nombre:v('ei-nom'), categoria:v('ei-cat'),
+    stock:n('ei-stock'), stock_minimo:n('ei-vol'), ppu:n('ei-ppu')
+  }).eq('id',id)
+  if (error) { toast('error','Error al guardar'); return }
+  toast('success','Insumo actualizado ✅')
+  cerrarModal(); renderInsumos()
+}
+
+window.eliminarInsumo = async function(id) {
+  if (!confirm('¿Eliminar este insumo?')) return
+  await sb.from('insumos').update({ activo:false }).eq('id',id)
+  toast('warn','Insumo eliminado')
+  cerrarModal(); renderInsumos()
+}
+
+// ── FÓRMULAS ──────────────────────────────────────────────
+async function renderFormulas() {
+  const { data } = await sb.from('formulas').select('*').eq('activo',true).order('nombre')
+  document.getElementById('content').innerHTML = `
+    <button class="btn btn-primary" style="margin-bottom:16px" onclick="modalNuevaFormula()">+ Nueva fórmula</button>
+    <div class="card">
+      ${!data?.length ? '<div class="loading">Sin fórmulas cargadas</div>' : data.map(f => `
+        <div class="list-item" onclick="modalVerFormula('${f.id}')">
+          <div class="list-item-left">
+            <div class="list-item-title">${f.nombre}</div>
+            <div class="list-item-sub">Rinde ${f.rendimiento} uds · MO ${f.mo_pct}% · Gan ${f.ganancia_pct}%</div>
+          </div>
+          <span style="color:var(--accent);font-size:18px">›</span>
+        </div>`).join('')}
+    </div>`
+}
+
+window.modalNuevaFormula = async function() {
+  const { data: ins } = await sb.from('insumos').select('id,nombre').eq('activo',true).order('nombre')
+  window._compTemp = []
+  abrirModal(`
+    <button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">⚗️ Nueva fórmula</div>
+    <div class="form-group"><label class="form-label">Nombre *</label>
+      <input class="form-input" id="f-nom" placeholder="Ej: Base Detergente"></div>
+    <div class="form-group"><label class="form-label">Rendimiento (uds que produce)</label>
+      <input class="form-input" id="f-rend" type="number" value="1000"></div>
+    <div class="grid-3">
+      <div class="form-group"><label class="form-label">MO %</label>
+        <input class="form-input" id="f-mo" type="number" value="20"></div>
+      <div class="form-group"><label class="form-label">Ganancia %</label>
+        <input class="form-input" id="f-gan" type="number" value="100"></div>
+      <div class="form-group"><label class="form-label">Envasado %</label>
+        <input class="form-input" id="f-env" type="number" value="20"></div>
+    </div>
+    <div class="section-title">Componentes</div>
+    <div id="comp-list"></div>
+    <button class="btn btn-ghost btn-sm" style="margin-bottom:14px" onclick="addComp(${JSON.stringify(ins).replace(/"/g,'&quot;')})">+ Agregar insumo</button>
+    <button class="btn btn-primary" onclick="guardarFormula(${JSON.stringify(ins).replace(/"/g,'&quot;')})">Guardar fórmula</button>
+  `)
+}
+
+window.addComp = function(ins) {
+  const idx = document.getElementById('comp-list').children.length
+  const d = document.createElement('div')
+  d.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;align-items:center'
+  d.innerHTML = `
+    <select class="form-select" id="c-ins-${idx}" style="flex:2">
+      <option value="">— Insumo —</option>
+      ${ins.map(i=>`<option value="${i.id}">${i.nombre}</option>`).join('')}
+    </select>
+    <input class="form-input" id="c-cant-${idx}" type="number" placeholder="cant." style="flex:1">
+    <button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--danger);font-size:20px;cursor:pointer;padding:4px;flex-shrink:0">✕</button>
+  `
+  document.getElementById('comp-list').appendChild(d)
+}
+
+window.guardarFormula = async function() {
+  const nom = v('f-nom')
+  if (!nom) { toast('error','El nombre es obligatorio'); return }
+  const { data: f, error } = await sb.from('formulas').insert({
+    nombre:nom, rendimiento:n('f-rend')||1000,
+    mo_pct:n('f-mo')||20, ganancia_pct:n('f-gan')||100, envasado_pct:n('f-env')||20
+  }).select().single()
+  if (error) { toast('error','Error al guardar'); return }
+  const comps = []
+  let idx = 0
+  while (document.getElementById(`c-ins-${idx}`)) {
+    const ins = document.getElementById(`c-ins-${idx}`).value
+    const cant = n(`c-cant-${idx}`)
+    if (ins && cant) comps.push({ formula_id:f.id, insumo_id:ins, cantidad:cant })
+    idx++
+  }
+  if (comps.length) await sb.from('formula_componentes').insert(comps)
+  toast('success','Fórmula guardada ✅')
+  cerrarModal(); renderFormulas()
+}
+
+window.modalVerFormula = async function(id) {
+  const [{ data: f }, { data: comps }] = await Promise.all([
+    sb.from('formulas').select('*').eq('id',id).single(),
+    sb.from('formula_componentes').select('cantidad,insumos(id,nombre,ppu,stock)').eq('formula_id',id)
+  ])
+  const costoBase = comps?.reduce((a,c) => a + c.cantidad * c.insumos.ppu, 0) || 0
+  abrirModal(`
+    <button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">⚗️ ${f.nombre}</div>
+    <div class="section-title">Componentes (por ${f.rendimiento} uds)</div>
+    <div class="card" style="margin-bottom:14px">
+      ${comps?.map(c=>`
+        <div class="list-item" style="cursor:default">
+          <span>${c.insumos.nombre}</span>
+          <span style="font-weight:600">${c.cantidad} uds · $${(c.cantidad*c.insumos.ppu).toFixed(2)}</span>
+        </div>`).join('')}
+    </div>
+    <div class="section-title">🔢 Calculadora</div>
+    <div class="form-group">
+      <label class="form-label">Quiero producir (uds)</label>
+      <input class="form-input" id="calc-cant" type="number" value="${f.rendimiento}" oninput="calcFormula(${JSON.stringify(comps).replace(/"/g,'&quot;')},${f.rendimiento})">
+    </div>
+    <div id="calc-res"></div>
+    <button class="btn btn-success" style="margin-top:8px" onclick="producirFormula('${f.id}','${f.nombre}',${JSON.stringify(comps).replace(/"/g,'&quot;')},${f.rendimiento})">✅ Producir y descontar stock</button>
+  `)
+  calcFormula(comps, f.rendimiento)
+}
+
+window.calcFormula = function(comps, rend) {
+  const cant = parseFloat(document.getElementById('calc-cant').value) || 0
+  const factor = cant / rend
+  const insuf = comps.filter(c => c.insumos.stock < c.cantidad * factor)
+  document.getElementById('calc-res').innerHTML = `
+    <div class="card">
+      ${comps.map(c => {
+        const nec = (c.cantidad * factor).toFixed(2)
+        const ok = c.insumos.stock >= c.cantidad * factor
+        return `<div class="list-item" style="cursor:default">
+          <span>${c.insumos.nombre}</span>
+          <div style="text-align:right">
+            <div style="font-weight:600">${nec} uds</div>
+            <div style="font-size:11px;color:${ok?'var(--accent2)':'var(--danger)'}">Stock: ${c.insumos.stock}</div>
+          </div>
+        </div>`
+      }).join('')}
+    </div>
+    ${insuf.length ? `<div class="alert alert-danger">⚠️ Stock insuficiente en: ${insuf.map(c=>c.insumos.nombre).join(', ')}</div>` : ''}`
+}
+
+window.producirFormula = async function(fId, fNom, comps, rend) {
+  const cant = parseFloat(document.getElementById('calc-cant').value) || 0
+  if (!cant) { toast('error','Ingresá una cantidad'); return }
+  const factor = cant / rend
+  for (const c of comps) {
+    if (c.insumos.stock < c.cantidad * factor) {
+      toast('error',`Stock insuficiente: ${c.insumos.nombre}`); return
+    }
+  }
+  for (const c of comps) {
+    await sb.from('insumos').update({ stock: c.insumos.stock - c.cantidad*factor }).eq('id',c.insumos.id)
+  }
+  const { data: existe } = await sb.from('insumos').select('id,stock').eq('nombre',fNom).eq('tipo','formula').maybeSingle()
+  if (existe) {
+    await sb.from('insumos').update({ stock: existe.stock + cant }).eq('id',existe.id)
+  } else {
+    await sb.from('insumos').insert({ nombre:fNom, tipo:'formula', stock:cant, ppu:0, activo:true })
+  }
+  await sb.from('producciones_formula').insert({ formula_id:fId, cantidad:cant })
+  toast('success',`${cant} uds de "${fNom}" producidas ✅`)
+  cerrarModal(); renderFormulas()
+}
+
+// ── INVENTARIO ────────────────────────────────────────────
+async function renderInventario() {
+  const { data } = await sb.from('productos').select('*').eq('activo',true).order('nombre')
+  document.getElementById('content').innerHTML = `
+    <button class="btn btn-primary" style="margin-bottom:16px" onclick="modalNuevoProducto()">+ Nuevo producto</button>
+    <div class="card">
+      ${!data?.length ? '<div class="loading">Sin productos cargados</div>' : data.map(p => {
+        const est = p.stock === 0 ? ['danger','Sin stock'] : p.stock <= p.stock_minimo ? ['warn','Bajo'] : ['green','OK']
+        return `<div class="list-item" onclick="modalVerProducto('${p.id}')">
+          <div class="list-item-left">
+            <div class="list-item-title">${p.nombre} ${p.presentacion}ml</div>
+            <div class="list-item-sub">Costo: $${p.costo} · Venta: $${p.precio_venta}</div>
+          </div>
+          <div class="list-item-right">
+            <span style="font-weight:700">${p.stock} uds</span>
+            <span class="badge badge-${est[0]}">${est[1]}</span>
+          </div>
+        </div>`
+      }).join('')}
+    </div>`
+}
+
+window.modalNuevoProducto = async function() {
+  const { data: ins } = await sb.from('insumos').select('id,nombre,ppu,tipo').eq('activo',true).order('nombre')
+  window._costo = 0; window._sugerido = 0
+  const optsAll = ins?.map(i=>`<option value="${i.id}" data-ppu="${i.ppu}">${i.nombre}</option>`).join('') || ''
+  const optsEnv = ins?.filter(i=>i.tipo==='envase').map(i=>`<option value="${i.id}" data-ppu="${i.ppu}">${i.nombre} $${i.ppu}</option>`).join('') || ''
+  const optsEtiq = ins?.filter(i=>i.tipo==='etiqueta').map(i=>`<option value="${i.id}" data-ppu="${i.ppu}">${i.nombre} $${i.ppu}</option>`).join('') || ''
+  abrirModal(`
+    <button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">📦 Nuevo producto</div>
+    <div class="form-group"><label class="form-label">Nombre *</label>
+      <input class="form-input" id="p-nom" placeholder="Ej: Detergente Concentrado"></div>
+    <div class="form-group"><label class="form-label">Presentación (ml/g/uds)</label>
+      <input class="form-input" id="p-pres" type="number" placeholder="250"></div>
+    <div class="form-group"><label class="form-label">Insumo / Fórmula principal</label>
+      <select class="form-select" id="p-ins" onchange="recalcProd(${JSON.stringify(ins).replace(/"/g,'&quot;')})">
+        <option value="">— Seleccionar —</option>${optsAll}
+      </select></div>
+    <div class="form-group"><label class="form-label">Cantidad que usa (uds)</label>
+      <input class="form-input" id="p-cins" type="number" placeholder="0" oninput="recalcProd(${JSON.stringify(ins).replace(/"/g,'&quot;')})"></div>
+    <div class="form-group"><label class="form-label">Envase</label>
+      <select class="form-select" id="p-env" onchange="recalcProd(${JSON.stringify(ins).replace(/"/g,'&quot;')})">
+        <option value="">— Sin envase —</option>${optsEnv}
+      </select></div>
+    <div class="form-group"><label class="form-label">Etiqueta</label>
+      <select class="form-select" id="p-etiq" onchange="recalcProd(${JSON.stringify(ins).replace(/"/g,'&quot;')})">
+        <option value="">— Sin etiqueta —</option>${optsEtiq}
+      </select></div>
+    <div class="grid-3">
+      <div class="form-group"><label class="form-label">MO %</label>
+        <input class="form-input" id="p-mo" type="number" value="20" oninput="recalcProd(${JSON.stringify(ins).replace(/"/g,'&quot;')})"></div>
+      <div class="form-group"><label class="form-label">Ganancia %</label>
+        <input class="form-input" id="p-gan" type="number" value="100" oninput="recalcProd(${JSON.stringify(ins).replace(/"/g,'&quot;')})"></div>
+      <div class="form-group"><label class="form-label">Envasado %</label>
+        <input class="form-input" id="p-envp" type="number" value="20" oninput="recalcProd(${JSON.stringify(ins).replace(/"/g,'&quot;')})"></div>
+    </div>
+    <div id="p-precio-preview"></div>
+    <div class="form-group"><label class="form-label">Precio de venta final</label>
+      <input class="form-input" id="p-pventa" type="number" placeholder="0"></div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Stock inicial</label>
+        <input class="form-input" id="p-stock" type="number" value="0"></div>
+      <div class="form-group"><label class="form-label">Stock mínimo</label>
+        <input class="form-input" id="p-smin" type="number" value="0"></div>
+    </div>
+    <button class="btn btn-primary" onclick="guardarProducto()">Guardar producto</button>
+  `)
+}
+
+window.recalcProd = function(ins) {
+  const insId = document.getElementById('p-ins')?.value
+  const cins = parseFloat(document.getElementById('p-cins')?.value) || 0
+  const mo = parseFloat(document.getElementById('p-mo')?.value) || 0
+  const gan = parseFloat(document.getElementById('p-gan')?.value) || 0
+  const envp = parseFloat(document.getElementById('p-envp')?.value) || 0
+  const insumo = ins?.find(i => i.id === insId)
+  if (!insumo || !cins) { document.getElementById('p-precio-preview').innerHTML = ''; return }
+  const costoBase = insumo.ppu * cins
+  const envSel = document.getElementById('p-env')
+  const etiqSel = document.getElementById('p-etiq')
+  const ppuEnv = envSel?.value ? parseFloat(envSel.options[envSel.selectedIndex].dataset.ppu)||0 : 0
+  const ppuEtiq = etiqSel?.value ? parseFloat(etiqSel.options[etiqSel.selectedIndex].dataset.ppu)||0 : 0
+  const subtotal = costoBase * (1 + mo/100 + gan/100)
+  const conEnv = subtotal * (1 + envp/100)
+  const sugerido = conEnv + ppuEnv + ppuEtiq
+  window._costo = costoBase; window._sugerido = sugerido
+  document.getElementById('p-precio-preview').innerHTML = `
+    <div class="precio-preview">
+      <div class="precio-row"><span>Costo base</span><span>$${costoBase.toFixed(2)}</span></div>
+      <div class="precio-row"><span>+ MO + Ganancia</span><span>$${subtotal.toFixed(2)}</span></div>
+      <div class="precio-row"><span>+ Envasado</span><span>$${conEnv.toFixed(2)}</span></div>
+      <div class="precio-row"><span>+ Envase + Etiqueta</span><span>$${(ppuEnv+ppuEtiq).toFixed(2)}</span></div>
+      <div class="precio-row total"><span>Precio sugerido</span><span>$${sugerido.toFixed(2)}</span></div>
+    </div>`
+  if (!document.getElementById('p-pventa').value)
+    document.getElementById('p-pventa').placeholder = sugerido.toFixed(2)
+}
+
+window.guardarProducto = async function() {
+  const nom = v('p-nom')
+  if (!nom) { toast('error','El nombre es obligatorio'); return }
+  const { error } = await sb.from('productos').insert({
+    nombre:nom,
+    presentacion:n('p-pres'),
+    insumo_id:v('p-ins')||null,
+    cantidad_insumo:n('p-cins'),
+    envase_id:v('p-env')||null,
+    etiqueta_id:v('p-etiq')||null,
+    mo_pct:n('p-mo'), ganancia_pct:n('p-gan'), envasado_pct:n('p-envp'),
+    costo:window._costo||0,
+    precio_sugerido:window._sugerido||0,
+    precio_venta:n('p-pventa')||window._sugerido||0,
+    stock:n('p-stock'), stock_minimo:n('p-smin')
+  })
+  if (error) { toast('error','Error: '+error.message); return }
+  toast('success','Producto guardado ✅')
+  cerrarModal(); renderInventario()
+}
+
+window.modalVerProducto = async function(id) {
+  const { data: p } = await sb.from('productos').select('*').eq('id',id).single()
+  abrirModal(`
+    <button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">📦 ${p.nombre} ${p.presentacion}ml</div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="list-item" style="cursor:default"><span style="color:var(--muted)">Stock</span><strong>${p.stock} uds</strong></div>
+      <div class="list-item" style="cursor:default"><span style="color:var(--muted)">Costo</span><strong>$${p.costo}</strong></div>
+      <div class="list-item" style="cursor:default"><span style="color:var(--muted)">P. Sugerido</span><strong>$${p.precio_sugerido}</strong></div>
+      <div class="list-item" style="cursor:default"><span style="color:var(--muted)">P. Venta</span><strong style="color:var(--accent2)">$${p.precio_venta}</strong></div>
+    </div>
+    <div class="section-title">Producir unidades</div>
+    <div class="form-group">
+      <label class="form-label">Cantidad a producir</label>
+      <input class="form-input" id="pp-cant" type="number" value="1" min="1">
+    </div>
+    <button class="btn btn-success" onclick="producirProducto('${p.id}','${p.nombre}')">✅ Producir y descontar insumo</button>
+    <button class="btn btn-ghost" style="margin-top:10px" onclick="cerrarModal()">Cancelar</button>
+  `)
+}
+
+window.producirProducto = async function(id, nom) {
+  const cant = n('pp-cant')
+  if (!cant) { toast('error','Ingresá una cantidad'); return }
+  const { data: p } = await sb.from('productos').select('*,insumos(id,stock,nombre)').eq('id',id).single()
+  const nec = p.cantidad_insumo * cant
+  if (p.insumos && p.insumos.stock < nec) {
+    toast('error',`Stock insuficiente: ${p.insumos.nombre} (hay ${p.insumos.stock}, necesitás ${nec})`); return
+  }
+  if (p.insumo_id) await sb.from('insumos').update({ stock: p.insumos.stock - nec }).eq('id',p.insumo_id)
+  await sb.from('productos').update({ stock: p.stock + cant }).eq('id',id)
+  await sb.from('producciones_producto').insert({ producto_id:id, cantidad:cant })
+  toast('success',`${cant} uds de "${nom}" producidas ✅`)
+  cerrarModal(); renderInventario()
+}
+
+// ── COMPRAS ───────────────────────────────────────────────
+async function renderCompras() {
+  const { data } = await sb.from('compras').select('*,insumos(nombre)').order('created_at',{ascending:false}).limit(30)
+  document.getElementById('content').innerHTML = `
+    <button class="btn btn-primary" style="margin-bottom:16px" onclick="modalNuevaCompra()">+ Registrar compra</button>
+    <div class="card">
+      ${!data?.length ? '<div class="loading">Sin compras registradas</div>' : data.map(c => `
+        <div class="list-item" style="cursor:default">
+          <div class="list-item-left">
+            <div class="list-item-title">${c.tipo==='insumo' ? (c.insumos?.nombre||'Insumo') : (c.descripcion||c.categoria_otro||'Gasto')}</div>
+            <div class="list-item-sub">${c.tipo==='insumo' ? `${c.cantidad} uds · PPU $${Number(c.ppu_nuevo).toFixed(4)}` : c.categoria_otro||''} · ${c.metodo_pago||''}</div>
+          </div>
+          <div class="list-item-right">
+            <span style="font-weight:700">$${Number(c.monto_total).toLocaleString('es-AR')}</span>
+            <span class="badge badge-${c.tipo==='insumo'?'blue':'gray'}">${c.tipo}</span>
+          </div>
+        </div>`).join('')}
+    </div>`
+}
+
+window.modalNuevaCompra = async function() {
+  const { data: ins } = await sb.from('insumos').select('id,nombre,ppu,stock').eq('activo',true).order('nombre')
+  abrirModal(`
+    <button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">🛒 Nueva compra</div>
+    <div class="form-group"><label class="form-label">Tipo</label>
+      <select class="form-select" id="co-tipo" onchange="toggleCompra()">
+        <option value="insumo">Insumo</option>
+        <option value="otro">Otro gasto</option>
+      </select></div>
+    <div id="co-ins-fields">
+      <div class="form-group"><label class="form-label">Insumo</label>
+        <select class="form-select" id="co-ins">
+          <option value="">— Seleccionar —</option>
+          ${ins?.map(i=>`<option value="${i.id}" data-ppu="${i.ppu}" data-stock="${i.stock}">${i.nombre}</option>`).join('')}
+        </select></div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Cantidad comprada</label>
+          <input class="form-input" id="co-cant" type="number" placeholder="0" oninput="calcPPU()"></div>
+        <div class="form-group"><label class="form-label">Monto total ($)</label>
+          <input class="form-input" id="co-monto" type="number" placeholder="0" oninput="calcPPU()"></div>
+      </div>
+      <div id="co-ppu-preview" style="color:var(--accent2);font-size:13px;margin-bottom:14px;font-weight:600"></div>
+    </div>
+    <div id="co-otro-fields" style="display:none">
+      <div class="form-group"><label class="form-label">Categoría</label>
+        <select class="form-select" id="co-cat">
+          <option>Ferretería</option><option>Herramienta</option><option>Accesorio</option>
+          <option>Comida</option><option>Transporte</option><option>Otro</option>
+        </select></div>
+      <div class="form-group"><label class="form-label">Descripción</label>
+        <input class="form-input" id="co-desc" placeholder="¿Qué compraste?"></div>
+      <div class="form-group"><label class="form-label">Monto ($)</label>
+        <input class="form-input" id="co-monto-otro" type="number" placeholder="0"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Proveedor</label>
+      <input class="form-input" id="co-prov" placeholder="Opcional"></div>
+    <div class="form-group"><label class="form-label">Método de pago</label>
+      <select class="form-select" id="co-met">
+        <option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option><option>Otro</option>
+      </select></div>
+    <button class="btn btn-primary" onclick="guardarCompra()">Guardar compra</button>
+  `)
+}
+
+window.toggleCompra = function() {
+  const t = document.getElementById('co-tipo').value
+  document.getElementById('co-ins-fields').style.display = t==='insumo'?'block':'none'
+  document.getElementById('co-otro-fields').style.display = t==='otro'?'block':'none'
+}
+
+window.calcPPU = function() {
+  const cant = parseFloat(document.getElementById('co-cant')?.value)||0
+  const monto = parseFloat(document.getElementById('co-monto')?.value)||0
+  if (cant && monto) {
+    document.getElementById('co-ppu-preview').textContent = `PPU calculado: $${(monto/cant).toFixed(4)}`
+  }
+}
+
+window.guardarCompra = async function() {
+  const tipo = document.getElementById('co-tipo').value
+  const met = document.getElementById('co-met').value
+  const prov = v('co-prov')
+  if (tipo === 'insumo') {
+    const insId = document.getElementById('co-ins').value
+    const cant = n('co-cant')
+    const monto = n('co-monto')
+    if (!insId) { toast('error','Seleccioná un insumo'); return }
+    if (!cant||!monto) { toast('error','Completá cantidad y monto'); return }
+    const ppuNuevo = monto/cant
+    const opt = document.getElementById('co-ins').options[document.getElementById('co-ins').selectedIndex]
+    const stockAct = parseFloat(opt.dataset.stock)||0
+    const ppuAnt = parseFloat(opt.dataset.ppu)||0
+    await sb.from('insumos').update({ stock: stockAct+cant, ppu: ppuNuevo }).eq('id',insId)
+    await sb.from('compras').insert({ tipo, insumo_id:insId, cantidad:cant, ppu_anterior:ppuAnt, ppu_nuevo:ppuNuevo, monto_total:monto, metodo_pago:met, proveedor:prov })
+    toast('success',`Stock actualizado · PPU nuevo: $${ppuNuevo.toFixed(4)} ✅`)
+  } else {
+    const monto = n('co-monto-otro')
+    if (!monto) { toast('error','Ingresá el monto'); return }
+    await sb.from('compras').insert({ tipo, categoria_otro:v('co-cat'), descripcion:v('co-desc'), monto_total:monto, metodo_pago:met, proveedor:prov })
+    toast('success','Gasto registrado ✅')
+  }
+  cerrarModal(); renderCompras()
+}
+
+// ── VENTAS ────────────────────────────────────────────────
+async function renderVentas() {
+  const { data } = await sb.from('ventas').select('*,clientes(nombre,apellido)').order('created_at',{ascending:false}).limit(30)
+  document.getElementById('content').innerHTML = `
+    <button class="btn btn-primary" style="margin-bottom:16px" onclick="modalNuevaVenta()">+ Nueva venta</button>
+    <div class="card">
+      ${!data?.length ? '<div class="loading">Sin ventas registradas</div>' : data.map(vt => {
+        const cli = vt.clientes ? `${vt.clientes.nombre} ${vt.clientes.apellido||''}` : (vt.cliente_libre||'Consumidor Final')
+        const est = vt.estado_pago==='pagado'?'green':vt.estado_pago==='parcial'?'warn':'danger'
+        return `<div class="list-item" onclick="modalComprobante('${vt.id}')">
+          <div class="list-item-left">
+            <div class="list-item-title">#${String(vt.numero).padStart(4,'0')} · ${cli}</div>
+            <div class="list-item-sub">${new Date(vt.created_at).toLocaleDateString('es-AR')}</div>
+          </div>
+          <div class="list-item-right">
+            <span style="font-weight:700">$${Number(vt.total).toLocaleString('es-AR')}</span>
+            <span class="badge badge-${est}">${vt.estado_pago}</span>
+          </div>
+        </div>`
+      }).join('')}
+    </div>`
+}
+
+window.modalNuevaVenta = async function() {
+  const [{ data: prods }, { data: ins }, { data: clis }] = await Promise.all([
+    sb.from('productos').select('id,nombre,presentacion,precio_venta,precio_sugerido,stock').eq('activo',true).order('nombre'),
+    sb.from('insumos').select('id,nombre,ppu,stock').eq('activo',true).order('nombre'),
+    sb.from('clientes').select('id,nombre,apellido').order('nombre')
+  ])
+  window._vitems = []
+  abrirModal(`
+    <button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">💰 Nueva venta</div>
+    <div class="form-group"><label class="form-label">Cliente (opcional)</label>
+      <select class="form-select" id="vt-cli">
+        <option value="">Consumidor Final</option>
+        ${clis?.map(c=>`<option value="${c.id}">${c.nombre} ${c.apellido||''}</option>`).join('')}
+      </select>
+      <input class="form-input" id="vt-cli-libre" placeholder="O escribí el nombre..." style="margin-top:8px">
+    </div>
+    <div class="section-title">Agregar items</div>
+    <div class="form-group"><label class="form-label">Tipo</label>
+      <select class="form-select" id="vt-tipo" onchange="toggleVentaTipo(${JSON.stringify(prods).replace(/"/g,'&quot;')},${JSON.stringify(ins).replace(/"/g,'&quot;')})">
+        <option value="producto">Producto terminado</option>
+        <option value="insumo">Insumo / Fórmula</option>
+      </select></div>
+    <div class="form-group">
+      <select class="form-select" id="vt-item">
+        ${prods?.map(p=>`<option value="${p.id}" data-precio="${p.precio_venta}" data-sug="${p.precio_sugerido}" data-nom="${p.nombre} ${p.presentacion}ml">${p.nombre} ${p.presentacion}ml — $${p.precio_venta}</option>`).join('')}
+      </select></div>
+    <div class="grid-2" style="margin-bottom:14px">
+      <div class="form-group" style="margin-bottom:0"><label class="form-label">Cantidad</label>
+        <input class="form-input" id="vt-cant" type="number" value="1" min="1"></div>
+      <div class="form-group" style="margin-bottom:0"><label class="form-label">Precio unit. (vacío = lista)</label>
+        <input class="form-input" id="vt-precio" type="number" placeholder="Automático"></div>
+    </div>
+    <button class="btn btn-ghost btn-sm" style="margin-bottom:16px" onclick="addItemVenta(${JSON.stringify(prods).replace(/"/g,'&quot;')},${JSON.stringify(ins).replace(/"/g,'&quot;')})">+ Agregar item</button>
+    <div id="vt-items"></div>
+    <div class="form-group"><label class="form-label">Método de pago</label>
+      <select class="form-select" id="vt-met">
+        <option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option><option>Otro</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Estado de pago</label>
+      <select class="form-select" id="vt-est" onchange="toggleParcial()">
+        <option value="pagado">Pagado</option>
+        <option value="parcial">Pago parcial</option>
+        <option value="debe">Debe</option>
+      </select></div>
+    <div id="vt-parcial" style="display:none">
+      <div class="form-group"><label class="form-label">Monto pagado</label>
+        <input class="form-input" id="vt-mpagado" type="number" placeholder="0"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notas</label>
+      <input class="form-input" id="vt-notas" placeholder="Opcional"></div>
+    <div id="vt-total" style="text-align:right;font-size:20px;font-weight:700;color:var(--accent2);margin-bottom:16px"></div>
+    <button class="btn btn-success" onclick="cerrarVenta()">🧾 Cerrar venta</button>
+  `)
+}
+
+window.toggleVentaTipo = function(prods, ins) {
+  const tipo = document.getElementById('vt-tipo').value
+  const sel = document.getElementById('vt-item')
+  const items = tipo === 'producto' ? prods : ins
+  sel.innerHTML = items?.map(i => {
+    const precio = tipo==='producto' ? i.precio_venta : i.ppu
+    const nom = tipo==='producto' ? `${i.nombre} ${i.presentacion}ml` : i.nombre
+    return `<option value="${i.id}" data-precio="${precio}" data-sug="${tipo==='producto'?i.precio_sugerido:precio}" data-nom="${nom}">${nom} — $${precio}</option>`
+  }).join('') || ''
+}
+
+window.toggleParcial = function() {
+  document.getElementById('vt-parcial').style.display =
+    document.getElementById('vt-est').value === 'parcial' ? 'block' : 'none'
+}
+
+window.addItemVenta = function(prods, ins) {
+  const sel = document.getElementById('vt-item')
+  const opt = sel.options[sel.selectedIndex]
+  if (!opt?.value) { toast('error','Seleccioná un item'); return }
+  const cant = parseFloat(document.getElementById('vt-cant').value)||1
+  const precioInput = parseFloat(document.getElementById('vt-precio').value)
+  const precioSug = parseFloat(opt.dataset.sug)||0
+  const precioUnit = precioInput || parseFloat(opt.dataset.precio)||0
+  window._vitems.push({
+    tipo: document.getElementById('vt-tipo').value,
+    id: opt.value, nombre: opt.dataset.nom||opt.text,
+    cant, precio_sugerido: precioSug, precio_unitario: precioUnit,
+    subtotal: cant*precioUnit, diferencia: (precioUnit-precioSug)*cant
+  })
+  renderItemsVenta()
+}
+
+function renderItemsVenta() {
+  const items = window._vitems
+  const total = items.reduce((a,i)=>a+i.subtotal,0)
+  document.getElementById('vt-items').innerHTML = items.length ? `
+    <div class="card" style="margin-bottom:12px">
+      ${items.map((i,idx)=>`
+        <div class="list-item" style="cursor:default">
+          <div class="list-item-left">
+            <div class="list-item-title">${i.nombre}</div>
+            <div class="list-item-sub">x${i.cant} · $${i.precio_unitario}</div>
+          </div>
+          <div class="list-item-right">
+            <span style="font-weight:700">$${i.subtotal.toLocaleString('es-AR')}</span>
+            <span onclick="window._vitems.splice(${idx},1);renderItemsVenta()" style="color:var(--danger);cursor:pointer;font-size:12px">quitar</span>
+          </div>
+        </div>`).join('')}
+    </div>` : ''
+  document.getElementById('vt-total').textContent = items.length ? `Total: $${total.toLocaleString('es-AR')}` : ''
+}
+
+window.cerrarVenta = async function() {
+  const items = window._vitems
+  if (!items.length) { toast('error','Agregá al menos un item'); return }
+  const total = items.reduce((a,i)=>a+i.subtotal,0)
+  const est = document.getElementById('vt-est').value
+  const mpagado = est==='pagado' ? total : est==='parcial' ? n('vt-mpagado') : 0
+  const cliId = document.getElementById('vt-cli').value || null
+  const cliLibre = v('vt-cli-libre')
+  const { data: vt, error } = await sb.from('ventas').insert({
+    cliente_id: cliId,
+    cliente_libre: !cliId ? (cliLibre||'Consumidor Final') : null,
+    total, subtotal:total,
+    metodo_pago: document.getElementById('vt-met').value,
+    estado_pago: est, monto_pagado:mpagado, saldo_pendiente:total-mpagado,
+    notas: v('vt-notas')
+  }).select().single()
+  if (error) { toast('error','Error al guardar venta'); return }
+  await sb.from('venta_items').insert(items.map(i=>({
+    venta_id:vt.id, tipo:i.tipo,
+    producto_id:i.tipo==='producto'?i.id:null,
+    insumo_id:i.tipo==='insumo'?i.id:null,
+    nombre_item:i.nombre, cantidad:i.cant,
+    precio_sugerido:i.precio_sugerido, precio_unitario:i.precio_unitario,
+    subtotal:i.subtotal, diferencia:i.diferencia
+  })))
+  for (const i of items) {
+    if (i.tipo==='producto') {
+      const { data:p } = await sb.from('productos').select('stock').eq('id',i.id).single()
+      await sb.from('productos').update({ stock:Math.max(0,p.stock-i.cant) }).eq('id',i.id)
+    } else {
+      const { data:ins } = await sb.from('insumos').select('stock').eq('id',i.id).single()
+      await sb.from('insumos').update({ stock:Math.max(0,ins.stock-i.cant) }).eq('id',i.id)
+    }
+  }
+  toast('success',`Venta #${String(vt.numero).padStart(4,'0')} — $${total.toLocaleString('es-AR')} ✅`)
+  cerrarModal()
+  setTimeout(() => modalComprobante(vt.id), 300)
+}
+
+window.modalComprobante = async function(id) {
+  const [{ data:vt }, { data:items }] = await Promise.all([
+    sb.from('ventas').select('*,clientes(nombre,apellido,cuit_cuil,telefono)').eq('id',id).single(),
+    sb.from('venta_items').select('*').eq('venta_id',id)
+  ])
+  const cli = vt.clientes ? `${vt.clientes.nombre} ${vt.clientes.apellido||''}` : (vt.cliente_libre||'Consumidor Final')
+  const fecha = new Date(vt.created_at).toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'})
+  const num = String(vt.numero).padStart(4,'0')
+  const txt = `*QuimArts — Comprobante #${num}*\nFecha: ${fecha}\nCliente: ${cli}\n\n${items.map(i=>`• ${i.nombre_item} x${i.cantidad} — $${Number(i.subtotal).toLocaleString('es-AR')}`).join('\n')}\n\n*Total: $${Number(vt.total).toLocaleString('es-AR')}*\nPago: ${vt.metodo_pago} · ${vt.estado_pago}${vt.saldo_pendiente>0?`\nSaldo pendiente: $${Number(vt.saldo_pendiente).toLocaleString('es-AR')}`:''}`
+  abrirModal(`
+    <button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">🧾 Comprobante #${num}</div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="list-item" style="cursor:default"><span style="color:var(--muted)">Cliente</span><strong>${cli}</strong></div>
+      <div class="list-item" style="cursor:default"><span style="color:var(--muted)">Fecha</span><span>${fecha}</span></div>
+      <div class="list-item" style="cursor:default"><span style="color:var(--muted)">Pago</span><span>${vt.metodo_pago} · <span class="badge badge-${vt.estado_pago==='pagado'?'green':vt.estado_pago==='parcial'?'warn':'danger'}">${vt.estado_pago}</span></span></div>
+      ${items.map(i=>`<div class="list-item" style="cursor:default"><span>${i.nombre_item} x${i.cantidad}</span><strong>$${Number(i.subtotal).toLocaleString('es-AR')}</strong></div>`).join('')}
+      <div class="list-item" style="cursor:default;border-top:1px solid var(--border)">
+        <strong>Total</strong><strong style="color:var(--accent2);font-size:18px">$${Number(vt.total).toLocaleString('es-AR')}</strong>
+      </div>
+      ${vt.saldo_pendiente>0?`<div class="list-item" style="cursor:default"><span style="color:var(--danger)">Saldo pendiente</span><strong style="color:var(--danger)">$${Number(vt.saldo_pendiente).toLocaleString('es-AR')}</strong></div>`:''}
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-success" onclick="window.open('https://wa.me/?text='+encodeURIComponent(\`${txt.replace(/`/g,"'")}\`),'_blank')">📱 WhatsApp</button>
+      <button class="btn btn-primary" onclick="window.open('mailto:?subject=Comprobante QuimArts %23${num}&body='+encodeURIComponent(\`${txt.replace(/`/g,"'")}\`),'_blank')">📧 Mail</button>
+    </div>
+  `)
+}
+
+// ── CLIENTES ──────────────────────────────────────────────
+async function renderClientes() {
+  const { data } = await sb.from('clientes').select('*').order('nombre')
+  document.getElementById('content').innerHTML = `
+    <button class="btn btn-primary" style="margin-bottom:16px" onclick="modalNuevoCliente()">+ Nuevo cliente</button>
+    <div class="card">
+      ${!data?.length ? '<div class="loading">Sin clientes</div>' : data.map(c=>`
+        <div class="list-item" style="cursor:default">
+          <div class="list-item-left">
+            <div class="list-item-title">${c.nombre||''} ${c.apellido||''}</div>
+            <div class="list-item-sub">${c.telefono||''} ${c.cuit_cuil?'· '+c.cuit_cuil:''}</div>
+          </div>
+        </div>`).join('')}
+    </div>`
+}
+
+window.modalNuevoCliente = function() {
+  abrirModal(`
+    <button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">👤 Nuevo cliente</div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" id="cl-nom"></div>
+      <div class="form-group"><label class="form-label">Apellido</label><input class="form-input" id="cl-ape"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" id="cl-tel" type="tel"></div>
+    <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="cl-mail" type="email"></div>
+    <div class="form-group"><label class="form-label">Dirección</label><input class="form-input" id="cl-dir"></div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">DNI</label><input class="form-input" id="cl-dni"></div>
+      <div class="form-group"><label class="form-label">CUIT/CUIL</label><input class="form-input" id="cl-cuit"></div>
+    </div>
+    <button class="btn btn-primary" onclick="guardarCliente()">Guardar cliente</button>
+  `)
+}
+
+window.guardarCliente = async function() {
+  const { error } = await sb.from('clientes').insert({
+    nombre:v('cl-nom'), apellido:v('cl-ape'), telefono:v('cl-tel'),
+    email:v('cl-mail'), direccion:v('cl-dir'), dni:v('cl-dni'), cuit_cuil:v('cl-cuit')
+  })
+  if (error) { toast('error','Error al guardar'); return }
+  toast('success','Cliente guardado ✅')
+  cerrarModal(); renderClientes()
+}
+
+// ── REPORTES ──────────────────────────────────────────────
+function renderReportes() {
+  document.getElementById('content').innerHTML = `
+    <div class="card">
+      <div style="text-align:center;padding:40px">
+        <div style="font-size:40px;margin-bottom:12px">📈</div>
+        <div style="font-weight:700;margin-bottom:8px">Reportes</div>
+        <div style="color:var(--muted);font-size:13px">Lo definimos en la próxima etapa</div>
+      </div>
+    </div>`
+}
+
+// ── MÁS ───────────────────────────────────────────────────
+function renderMas() {
+  const opts = [
+    {icon:'🛒',label:'Compras',page:'compras'},
+    {icon:'📦',label:'Inventario',page:'inventario'},
+    {icon:'👥',label:'Clientes',page:'clientes'},
+    {icon:'📈',label:'Reportes',page:'reportes'},
+  ]
+  document.getElementById('content').innerHTML = `
+    <div class="card">
+      ${opts.map(o=>`
+        <div class="list-item" onclick="navegar('${o.page}')">
+          <div class="list-item-title">${o.icon} ${o.label}</div>
+          <span style="color:var(--accent);font-size:18px">›</span>
+        </div>`).join('')}
+    </div>`
+}
+
+// ── MODAL ─────────────────────────────────────────────────
+function abrirModal(html) {
+  document.getElementById('modal-content').innerHTML = html
+  document.getElementById('modal-overlay').classList.add('open')
+}
+window.cerrarModal = function(e) {
+  if (!e || e.target === document.getElementById('modal-overlay'))
+    document.getElementById('modal-overlay').classList.remove('open')
+}
+
+// ── TOAST ─────────────────────────────────────────────────
+window.toast = function(tipo, msg) {
+  const iconos = {success:'✅',error:'❌',warn:'⚠️',info:'ℹ️'}
+  const wrap = document.getElementById('toast-wrap')
+  const t = document.createElement('div')
+  t.className = `toast ${tipo}`
+  t.innerHTML = `<span style="font-size:16px">${iconos[tipo]||'ℹ️'}</span><span style="font-size:13px">${msg}</span>`
+  wrap.appendChild(t)
+  setTimeout(()=>t.remove(), 3500)
+}
+
+// ── UTILS ─────────────────────────────────────────────────
+function v(id) { return document.getElementById(id)?.value?.trim()||'' }
+function n(id) { return parseFloat(document.getElementById(id)?.value)||0 }
+
+// ── INICIO ────────────────────────────────────────────────
+renderDashboard()
+</script>
+</body>
+</html>
