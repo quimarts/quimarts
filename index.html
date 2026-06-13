@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>QuimArts</title>
+<meta name="theme-color" content="#0f1117">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="QuimArts">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+:root{--bg:#0f1117;--surface:#181c27;--card:#1e2334;--border:#2a3048;--accent:#4f8ef7;--accent2:#38d9a9;--warn:#f5a623;--danger:#e05c5c;--text:#e8ecf5;--muted:#6b7894;--label:#9ba8c4;--radius:10px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh;}
+.topbar{position:fixed;top:0;left:0;right:0;height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;z-index:100;}
+.topbar-logo{font-size:16px;font-weight:800;color:var(--accent);}
+.topbar-logo span{color:var(--accent2);}
+.topbar-title{font-size:15px;font-weight:600;flex:1;text-align:center;}
+.content{padding:16px;padding-top:72px;padding-bottom:80px;max-width:600px;margin:0 auto;}
+.navbar{position:fixed;bottom:0;left:0;right:0;height:64px;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:100;}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--muted);font-size:11px;font-weight:500;border:none;background:none;transition:color .15s;}
+.nav-btn.active{color:var(--accent);}
+.nav-btn .nav-icon{font-size:20px;}
+.big-btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+.big-btn{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;transition:border-color .15s;width:100%;}
+.big-btn:active{border-color:var(--accent);}
+.big-btn .big-icon{font-size:36px;}
+.big-btn .big-label{font-size:15px;font-weight:700;}
+.big-btn.primary{border-color:rgba(79,142,247,.4);background:rgba(79,142,247,.08);}
+.big-btn.success{border-color:rgba(56,217,169,.4);background:rgba(56,217,169,.08);}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
+.card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:14px;font-weight:700;}
+.list-item{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(42,48,72,.5);font-size:13px;cursor:pointer;}
+.list-item:last-child{border-bottom:none;}
+.list-item-left{display:flex;flex-direction:column;gap:3px;}
+.list-item-title{font-weight:600;}
+.list-item-sub{font-size:12px;color:var(--muted);}
+.list-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;}
+.badge-green{background:rgba(56,217,169,.15);color:var(--accent2);}
+.badge-warn{background:rgba(245,166,35,.15);color:var(--warn);}
+.badge-danger{background:rgba(224,92,92,.15);color:var(--danger);}
+.badge-blue{background:rgba(79,142,247,.15);color:var(--accent);}
+.badge-gray{background:rgba(107,120,148,.15);color:var(--label);}
+.badge-purple{background:rgba(160,120,247,.15);color:#a078f7;}
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.form-label{font-size:12px;color:var(--label);font-weight:600;}
+.form-input,.form-select{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:11px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;width:100%;transition:border-color .15s;}
+.form-input:focus,.form-select:focus{border-color:var(--accent);}
+.form-select option{background:var(--surface);}
+.btn{padding:12px 18px;border-radius:8px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;transition:opacity .15s;}
+.btn:active{opacity:.8;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-success{background:var(--accent2);color:#0f1117;}
+.btn-ghost{background:var(--card);color:var(--label);border:1px solid var(--border);}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-sm{padding:8px 14px;font-size:13px;}
+.btn-row{display:flex;gap:10px;}
+.btn-row .btn{flex:1;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--card);border-radius:20px 20px 0 0;padding:24px 20px 32px;width:100%;max-height:92vh;overflow-y:auto;animation:slideUp .25s;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:20px;padding-right:32px;}
+.modal-close{position:absolute;right:20px;top:20px;background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;line-height:1;}
+.modal-inner{position:relative;}
+.toast-wrap{position:fixed;top:70px;left:16px;right:16px;z-index:300;pointer-events:none;}
+.toast{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;animation:slideDown .25s;margin-bottom:8px;pointer-events:all;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.toast.success{border-color:rgba(56,217,169,.4);}
+.toast.error{border-color:rgba(224,92,92,.4);}
+.toast.warn{border-color:rgba(245,166,35,.4);}
+.section-title{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;margin-top:4px;}
+.loading{text-align:center;padding:40px;color:var(--muted);font-size:13px;}
+.precio-preview{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px;}
+.precio-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;}
+.precio-row.total{font-weight:700;color:var(--accent2);border-top:1px solid var(--border);padding-top:8px;margin-top:4px;font-size:15px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.pct-bar{height:4px;border-radius:2px;background:var(--border);margin-top:4px;overflow:hidden;}
+.pct-fill{height:100%;border-radius:2px;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-logo">Quim<span>Arts</span></div>
+  <div class="topbar-title" id="page-title">Dashboard</div>
+  <div style="width:70px"></div>
+</div>
+<div class="content" id="content"><div class="loading">Iniciando...</div></div>
+<nav class="navbar">
+  <button class="nav-btn active" data-page="dashboard" onclick="navegar('dashboard')"><span class="nav-icon">🏠</span>Inicio</button>
+  <button class="nav-btn" data-page="insumos" onclick="navegar('insumos')"><span class="nav-icon">🧪</span>Insumos</button>
+  <button class="nav-btn" data-page="formulas" onclick="navegar('formulas')"><span class="nav-icon">⚗️</span>Fórmulas</button>
+  <button class="nav-btn" data-page="ventas" onclick="navegar('ventas')"><span class="nav-icon">💰</span>Ventas</button>
+  <button class="nav-btn" data-page="mas" onclick="navegar('mas')"><span class="nav-icon">☰</span>Más</button>
+</nav>
+<div class="modal-overlay" id="modal-overlay" onclick="cerrarModal(event)">
+  <div class="modal modal-inner" id="modal-content" onclick="event.stopPropagation()"></div>
+</div>
+<div class="toast-wrap" id="toast-wrap"></div>
+<script>
+const {createClient}=supabase
+const sb=createClient('https://uqpsmzesmwnaubisuwlx.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxcHNtemVzbXduYXViaXN1d2x4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5OTk1NzQsImV4cCI6MjA5NjU3NTU3NH0.3DtDxAfknBX9TDvgcu2IxFWyf1Se5RF0vZDuuHaJeZg')
+function v(id){return document.getElementById(id)?.value?.trim()||''}
+function n(id){return parseFloat(document.getElementById(id)?.value)||0}
+function esInfinito(i){return !i.stock_minimo&&!i.stock&&!i.ppu}
+function estadoInsumo(s,vol){const p=vol>0?(s/vol)*100:100;if(p>=50)return['green','Normal',p];if(p>=30)return['warn','Medio',p];if(p>=10)return['danger','Bajo',p];return['danger','Critico',p]}
+const titulos={dashboard:'Dashboard',insumos:'Insumos',formulas:'Formulas',ventas:'Ventas',compras:'Compras',inventario:'Inventario',clientes:'Clientes',reportes:'Reportes',mas:'Menu'}
+window.navegar=function(p){document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===p));document.getElementById('page-title').textContent=titulos[p]||p;renderPagina(p)}
+async function renderPagina(p){document.getElementById('content').innerHTML='<div class="loading">Cargando...</div>';const map={dashboard:renderDashboard,insumos:renderInsumos,formulas:renderFormulas,ventas:renderVentas,compras:renderCompras,inventario:renderInventario,clientes:renderClientes,reportes:renderReportes,mas:renderMas};if(map[p])await map[p]();else document.getElementById('content').innerHTML='<div class="loading">Proximamente</div>'}
+
+async function renderDashboard(){
+  const [{data:ins},{data:prods},{data:vendeuda}]=await Promise.all([
+    sb.from('insumos').select('id,stock,stock_minimo,nombre,ppu').eq('activo',true),
+    sb.from('productos').select('stock,stock_minimo,nombre,presentacion').eq('activo',true),
+    sb.from('ventas').select('id,cliente_libre,saldo_pendiente,clientes(nombre,apellido)').eq('estado_pago','debe')
+  ])
+  const insConVol=ins?.filter(i=>!esInfinito(i)&&i.stock_minimo>0)||[]
+  const insCrit=insConVol.filter(i=>(i.stock/i.stock_minimo)*100<10)
+  const insBaj=insConVol.filter(i=>{const p=(i.stock/i.stock_minimo)*100;return p>=10&&p<30})
+  const insMed=insConVol.filter(i=>{const p=(i.stock/i.stock_minimo)*100;return p>=30&&p<50})
+  const pCrit=prods?.filter(p=>p.stock===0)||[]
+  const pBaj=prods?.filter(p=>p.stock_minimo>0&&p.stock>0&&p.stock<=p.stock_minimo)||[]
+  const tot=insCrit.length+insBaj.length+insMed.length+pCrit.length+pBaj.length+(vendeuda?.length||0)
+  document.getElementById('content').innerHTML=`
+    <div class="big-btn-grid">
+      <button class="big-btn primary" onclick="navegar('ventas')"><div class="big-icon">💰</div><div class="big-label">Vender</div></button>
+      <button class="big-btn success" onclick="navegar('inventario')"><div class="big-icon">📦</div><div class="big-label">Inventario</div></button>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">🔔 Alertas</span>${tot>0?`<span class="badge badge-danger">${tot}</span>`:'<span class="badge badge-green">Todo OK</span>'}</div>
+      ${tot===0?'<div class="loading" style="padding:20px">Sin alertas por ahora 👍</div>':''}
+      ${insCrit.length?`<div style="padding:10px 16px 4px;font-size:11px;color:var(--danger);font-weight:700;text-transform:uppercase">🔴 Insumos criticos (&lt;10%)</div>${insCrit.map(i=>`<div class="list-item" onclick="navegar('insumos')"><div class="list-item-left"><div class="list-item-title">${i.nombre}</div><div class="list-item-sub">${i.stock} u · ${Math.round((i.stock/i.stock_minimo)*100)}%</div></div><span class="badge badge-danger">Critico</span></div>`).join('')}`:''}
+      ${insBaj.length?`<div style="padding:10px 16px 4px;font-size:11px;color:var(--danger);font-weight:700;text-transform:uppercase">🟠 Insumos bajos (10-29%)</div>${insBaj.map(i=>`<div class="list-item" onclick="navegar('insumos')"><div class="list-item-left"><div class="list-item-title">${i.nombre}</div><div class="list-item-sub">${i.stock} u · ${Math.round((i.stock/i.stock_minimo)*100)}%</div></div><span class="badge badge-danger">Bajo</span></div>`).join('')}`:''}
+      ${insMed.length?`<div style="padding:10px 16px 4px;font-size:11px;color:var(--warn);font-weight:700;text-transform:uppercase">🟡 Insumos medios (30-49%)</div>${insMed.map(i=>`<div class="list-item" onclick="navegar('insumos')"><div class="list-item-left"><div class="list-item-title">${i.nombre}</div><div class="list-item-sub">${i.stock} u · ${Math.round((i.stock/i.stock_minimo)*100)}%</div></div><span class="badge badge-warn">Medio</span></div>`).join('')}`:''}
+      ${pCrit.length?`<div style="padding:10px 16px 4px;font-size:11px;color:var(--danger);font-weight:700;text-transform:uppercase">🔴 Productos sin stock</div>${pCrit.map(p=>`<div class="list-item" onclick="navegar('inventario')"><div class="list-item-left"><div class="list-item-title">${p.nombre} ${p.presentacion}ml</div><div class="list-item-sub">Sin unidades</div></div><span class="badge badge-danger">Sin stock</span></div>`).join('')}`:''}
+      ${pBaj.length?`<div style="padding:10px 16px 4px;font-size:11px;color:var(--warn);font-weight:700;text-transform:uppercase">🟡 Productos stock bajo</div>${pBaj.map(p=>`<div class="list-item" onclick="navegar('inventario')"><div class="list-item-left"><div class="list-item-title">${p.nombre} ${p.presentacion}ml</div><div class="list-item-sub">Stock: ${p.stock} / Min: ${p.stock_minimo}</div></div><span class="badge badge-warn">Bajo</span></div>`).join('')}`:''}
+      ${vendeuda?.length?`<div style="padding:10px 16px 4px;font-size:11px;color:var(--accent);font-weight:700;text-transform:uppercase">💳 Saldos pendientes</div>${vendeuda.map(vt=>{const cli=vt.clientes?`${vt.clientes.nombre} ${vt.clientes.apellido||''}`:(vt.cliente_libre||'Consumidor Final');return`<div class="list-item" onclick="modalComprobante('${vt.id}')"><div class="list-item-left"><div class="list-item-title">${cli}</div><div class="list-item-sub">Saldo pendiente</div></div><span style="font-weight:700;color:var(--danger)">$${Number(vt.saldo_pendiente).toLocaleString('es-AR')}</span></div>`}).join('')}`:''}
+    </div>`
+}
+
+async function renderInsumos(){
+  const {data}=await sb.from('insumos').select('*').eq('activo',true).order('nombre')
+  document.getElementById('content').innerHTML=`
+    <button class="btn btn-primary" style="margin-bottom:16px" onclick="modalNuevoInsumo()">+ Nuevo insumo</button>
+    <div class="card">${!data?.length?'<div class="loading">Sin insumos cargados</div>':data.map(i=>{
+      if(esInfinito(i))return`<div class="list-item" onclick="modalEditarInsumo('${i.id}')"><div class="list-item-left"><div class="list-item-title">${i.nombre}</div><div class="list-item-sub">${i.categoria||'Sin categoria'} · PPG/U: $0</div></div><div class="list-item-right"><span style="font-weight:700;color:var(--accent);font-size:18px">∞</span><span class="badge badge-purple">Infinito</span></div></div>`
+      const [cls,lbl,pct]=estadoInsumo(i.stock,i.stock_minimo)
+      const pr=Math.min(Math.round(pct),100)
+      const bc=cls==='green'?'var(--accent2)':cls==='warn'?'var(--warn)':'var(--danger)'
+      return`<div class="list-item" onclick="modalEditarInsumo('${i.id}')"><div class="list-item-left"><div class="list-item-title">${i.nombre}</div><div class="list-item-sub">${i.categoria||'Sin categoria'} · PPG/U: $${Number(i.ppu).toFixed(4)}</div><div class="pct-bar"><div class="pct-fill" style="width:${pr}%;background:${bc}"></div></div></div><div class="list-item-right"><span style="font-weight:700">${i.stock} u</span><span class="badge badge-${cls}">${lbl} ${Math.round(pct)}%</span></div></div>`
+    }).join('')}</div>`
+}
+
+window.modalNuevoInsumo=function(){
+  abrirModal(`<button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">🧪 Nuevo insumo</div>
+    <div class="form-group"><label class="form-label">Nombre *</label><input class="form-input" id="i-nom" placeholder="Ej: Acido Citrico"></div>
+    <div class="form-group"><label class="form-label">Categoria</label><input class="form-input" id="i-cat" placeholder="Ej: Acidos, Solventes..."></div>
+    <div style="background:rgba(160,120,247,.08);border:1px solid rgba(160,120,247,.3);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;color:var(--label)">
+      💡 Si dejás volumen, precio y stock en 0 se guarda como <strong style="color:#a078f7">Infinito</strong> (ej: agua de red)
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Volumen de compra</label><input class="form-input" id="i-vol" type="number" placeholder="Ej: 5000" oninput="calcPPUI()"></div>
+      <div class="form-group"><label class="form-label">Precio total ($)</label><input class="form-input" id="i-precio" type="number" placeholder="Ej: 5000" oninput="calcPPUI()"></div>
+    </div>
+    <div id="i-ppuprev" style="color:var(--accent2);font-size:13px;font-weight:600;margin-bottom:14px"></div>
+    <div class="form-group"><label class="form-label">Stock inicial</label><input class="form-input" id="i-stock" type="number" placeholder="0" value="0"></div>
+    <button class="btn btn-primary" onclick="guardarInsumo()">Guardar insumo</button>`)
+}
+window.calcPPUI=function(){const vol=parseFloat(document.getElementById('i-vol')?.value)||0;const precio=parseFloat(document.getElementById('i-precio')?.value)||0;const p=document.getElementById('i-ppuprev');if(p&&vol&&precio)p.textContent='PPG/U calculado: $'+(precio/vol).toFixed(4);else if(p)p.textContent=''}
+window.guardarInsumo=async function(){
+  const nom=v('i-nom');if(!nom){toast('error','El nombre es obligatorio');return}
+  const vol=n('i-vol'),precio=n('i-precio'),stock=n('i-stock')
+  const ppu=vol&&precio?precio/vol:0
+  const {error}=await sb.from('insumos').insert({nombre:nom,categoria:v('i-cat'),tipo:'insumo',stock,stock_minimo:vol,ppu})
+  if(error){toast('error','Error: '+error.message);return}
+  toast('success',(vol===0&&precio===0&&stock===0)?'Insumo infinito guardado':'Insumo guardado ✅')
+  cerrarModal();renderInsumos()
+}
+window.modalEditarInsumo=async function(id){
+  const {data:i}=await sb.from('insumos').select('*').eq('id',id).single()
+  const inf=esInfinito(i);const [cls,lbl,pct]=estadoInsumo(i.stock,i.stock_minimo)
+  abrirModal(`<button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">✏️ ${i.nombre}</div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px">
+      ${inf?'<span class="badge badge-purple">Infinito</span><span style="font-size:13px;color:var(--muted)">Sin stock ni costo</span>':`<span class="badge badge-${cls}">${lbl}</span><span style="font-size:13px;color:var(--muted)">${i.stock} u · ${Math.round(pct)}% del volumen</span>`}
+    </div>
+    <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" id="ei-nom" value="${i.nombre}"></div>
+    <div class="form-group"><label class="form-label">Categoria</label><input class="form-input" id="ei-cat" value="${i.categoria||''}"></div>
+    <div class="form-group"><label class="form-label">Stock actual (u)</label><input class="form-input" id="ei-stock" type="number" value="${i.stock}"></div>
+    <div class="form-group"><label class="form-label">Volumen de compra</label><input class="form-input" id="ei-vol" type="number" value="${i.stock_minimo||0}"></div>
+    <div class="form-group"><label class="form-label">PPG/U actual</label><input class="form-input" id="ei-ppu" type="number" value="${i.ppu}" step="0.0001"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="actualizarInsumo('${id}')">Guardar cambios</button>
+      <button class="btn btn-danger btn-sm" style="flex:0.4" onclick="eliminarInsumo('${id}')">🗑</button>
+    </div>`)
+}
+window.actualizarInsumo=async function(id){const {error}=await sb.from('insumos').update({nombre:v('ei-nom'),categoria:v('ei-cat'),stock:n('ei-stock'),stock_minimo:n('ei-vol'),ppu:n('ei-ppu')}).eq('id',id);if(error){toast('error','Error al guardar');return}toast('success','Insumo actualizado ✅');cerrarModal();renderInsumos()}
+window.eliminarInsumo=async function(id){if(!confirm('Eliminar este insumo?'))return;await sb.from('insumos').update({activo:false}).eq('id',id);toast('warn','Insumo eliminado');cerrarModal();renderInsumos()}
+
+async function renderFormulas(){
+  const {data}=await sb.from('formulas').select('*').eq('activo',true).order('nombre')
+  document.getElementById('content').innerHTML=`
+    <button class="btn btn-primary" style="margin-bottom:16px" onclick="modalNuevaFormula()">+ Nueva formula</button>
+    <div class="card">${!data?.length?'<div class="loading">Sin formulas cargadas</div>':data.map(f=>`<div class="list-item" onclick="modalVerFormula('${f.id}')"><div class="list-item-left"><div class="list-item-title">${f.nombre}</div><div class="list-item-sub">Rinde ${f.rendimiento} u</div></div><span style="color:var(--accent);font-size:18px">›</span></div>`).join('')}</div>`
+}
+
+window.modalNuevaFormula=async function(){
+  const {data:ins}=await sb.from('insumos').select('id,nombre').eq('activo',true).order('nombre')
+  abrirModal(`<button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">⚗️ Nueva formula</div>
+    <div class="form-group"><label class="form-label">Nombre *</label><input class="form-input" id="f-nom" placeholder="Ej: Soda al 50%"></div>
+    <div class="form-group"><label class="form-label">Rendimiento (u que produce)</label><input class="form-input" id="f-rend" type="number" value="1000"></div>
+    <div class="section-title">Componentes (en %)</div>
+    <div style="background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--label)">
+      Los porcentajes deben sumar 100. Ej: Soda 50% + Agua 50%
+    </div>
+    <div id="comp-list"></div>
+    <div id="comp-total" style="text-align:right;font-size:13px;color:var(--muted);margin-bottom:10px"></div>
+    <button class="btn btn-ghost btn-sm" style="margin-bottom:14px" onclick='addComp(${JSON.stringify(ins)})'>+ Agregar componente</button>
+    <button class="btn btn-primary" onclick="guardarFormula()">Guardar formula</button>`)
+}
+window.addComp=function(ins){
+  const idx=document.getElementById('comp-list').children.length
+  const d=document.createElement('div');d.style.cssText='display:flex;gap:8px;margin-bottom:10px;align-items:center'
+  d.innerHTML='<select class="form-select" id="c-ins-'+idx+'" style="flex:2"><option value="">Insumo</option>'+ins.map(i=>'<option value="'+i.id+'">'+i.nombre+'</option>').join('')+'</select><div style="display:flex;align-items:center;gap:4px;flex:1"><input class="form-input" id="c-pct-'+idx+'" type="number" placeholder="%" min="0" max="100" oninput="updTotalPct()"><span style="color:var(--muted);font-size:13px;flex-shrink:0">%</span></div><button onclick="this.parentElement.remove();updTotalPct()" style="background:none;border:none;color:var(--danger);font-size:20px;cursor:pointer;padding:4px;flex-shrink:0">✕</button>'
+  document.getElementById('comp-list').appendChild(d);updTotalPct()
+}
+window.updTotalPct=function(){let t=0,idx=0;while(document.getElementById('c-pct-'+idx)){t+=parseFloat(document.getElementById('c-pct-'+idx).value)||0;idx++}const el=document.getElementById('comp-total');if(el){const ok=Math.abs(t-100)<0.01;el.innerHTML='<span style="color:'+(ok?'var(--accent2)':t>100?'var(--danger)':'var(--warn)')+';font-weight:700">Total: '+t.toFixed(1)+'%</span> '+(ok?'✅':t>100?'⚠️ Supera 100%':'(falta '+(100-t).toFixed(1)+'%)')}}
+window.guardarFormula=async function(){
+  const nom=v('f-nom');if(!nom){toast('error','El nombre es obligatorio');return}
+  const rend=n('f-rend')||1000
+  const comps=[];let idx=0,totalPct=0
+  while(document.getElementById('c-ins-'+idx)){
+    const insId=document.getElementById('c-ins-'+idx).value
+    const pct=parseFloat(document.getElementById('c-pct-'+idx).value)||0
+    if(insId&&pct){comps.push({insId,pct});totalPct+=pct}
+    idx++
+  }
+  if(!comps.length){toast('error','Agrega al menos un componente');return}
+  if(Math.abs(totalPct-100)>0.01){toast('error','Los porcentajes suman '+totalPct.toFixed(1)+'%, deben sumar 100%');return}
+  const {data:f,error}=await sb.from('formulas').insert({nombre:nom,rendimiento:rend,mo_pct:0,ganancia_pct:0,envasado_pct:0}).select().single()
+  if(error){toast('error','Error al guardar');return}
+  await sb.from('formula_componentes').insert(comps.map(c=>({formula_id:f.id,insumo_id:c.insId,cantidad:(c.pct/100)*rend})))
+  toast('success','Formula guardada ✅');cerrarModal();renderFormulas()
+}
+window.modalVerFormula=async function(id){
+  const [{data:f},{data:comps}]=await Promise.all([
+    sb.from('formulas').select('*').eq('id',id).single(),
+    sb.from('formula_componentes').select('cantidad,insumos(id,nombre,ppu,stock,stock_minimo)').eq('formula_id',id)
+  ])
+  abrirModal(`<button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">⚗️ ${f.nombre}</div>
+    <div class="section-title">Composicion (base ${f.rendimiento} u)</div>
+    <div class="card" style="margin-bottom:14px">
+      ${comps?.map(c=>{const pct=((c.cantidad/f.rendimiento)*100).toFixed(1);const inf=esInfinito(c.insumos);return'<div class="list-item" style="cursor:default"><div class="list-item-left"><div class="list-item-title">'+c.insumos.nombre+'</div><div class="list-item-sub">'+pct+'% · '+c.cantidad+' u base</div></div><span style="font-weight:600;color:'+(inf?'var(--accent)':'var(--text)')+'>">'+(inf?'∞':'$'+(c.cantidad*c.insumos.ppu).toFixed(2))+'</span></div>'}).join('')}
+    </div>
+    <div class="section-title">🔢 Calculadora</div>
+    <div class="form-group"><label class="form-label">Quiero producir (u)</label>
+      <input class="form-input" id="calc-cant" type="number" value="${f.rendimiento}" oninput='calcFormula(${JSON.stringify(comps)},${f.rendimiento})'>
+    </div>
+    <div id="calc-res"></div>
+    <button class="btn btn-success" style="margin-top:8px" onclick='producirFormula("${f.id}","${f.nombre}",${JSON.stringify(comps)},${f.rendimiento})'>✅ Producir y descontar stock</button>`)
+  calcFormula(comps,f.rendimiento)
+}
+window.calcFormula=function(comps,rend){
+  const cant=parseFloat(document.getElementById('calc-cant').value)||0
+  const factor=cant/rend
+  const insuf=comps.filter(c=>!esInfinito(c.insumos)&&c.insumos.stock<c.cantidad*factor)
+  document.getElementById('calc-res').innerHTML='<div class="card">'+comps.map(c=>{const nec=(c.cantidad*factor).toFixed(2);const pct=((c.cantidad/rend)*100).toFixed(1);const inf=esInfinito(c.insumos);const ok=inf||c.insumos.stock>=c.cantidad*factor;return'<div class="list-item" style="cursor:default"><div class="list-item-left"><div class="list-item-title">'+c.insumos.nombre+' <span style="color:var(--muted);font-weight:400">('+pct+'%)</span></div><div class="list-item-sub" style="color:'+(ok?'var(--accent2)':'var(--danger)')+'>'+(inf?'Sin limite':'Stock: '+c.insumos.stock+' u')+'</div></div><span style="font-weight:700">'+(inf?'—':nec+' u')+'</span></div>'}).join('')+'</div>'+(insuf.length?'<div style="background:rgba(224,92,92,.1);border:1px solid rgba(224,92,92,.3);border-radius:8px;padding:12px;margin-top:8px;font-size:13px;color:var(--danger)">⚠️ Stock insuficiente: '+insuf.map(c=>c.insumos.nombre).join(', ')+'</div>':'')
+}
+window.producirFormula=async function(fId,fNom,comps,rend){
+  const cant=parseFloat(document.getElementById('calc-cant').value)||0
+  if(!cant){toast('error','Ingresa una cantidad');return}
+  const factor=cant/rend
+  for(const c of comps){if(!esInfinito(c.insumos)&&c.insumos.stock<c.cantidad*factor){toast('error','Stock insuficiente: '+c.insumos.nombre);return}}
+  for(const c of comps){if(!esInfinito(c.insumos))await sb.from('insumos').update({stock:c.insumos.stock-c.cantidad*factor}).eq('id',c.insumos.id)}
+  const {data:existe}=await sb.from('insumos').select('id,stock').eq('nombre',fNom).eq('tipo','formula').maybeSingle()
+  if(existe)await sb.from('insumos').update({stock:existe.stock+cant}).eq('id',existe.id)
+  else await sb.from('insumos').insert({nombre:fNom,tipo:'formula',stock:cant,ppu:0,activo:true})
+  await sb.from('producciones_formula').insert({formula_id:fId,cantidad:cant})
+  toast('success',cant+' u de "'+fNom+'" producidas ✅');cerrarModal();renderFormulas()
+}
+
+async function renderInventario(){
+  const {data}=await sb.from('productos').select('*').eq('activo',true).order('nombre')
+  document.getElementById('content').innerHTML=`
+    <button class="btn btn-primary" style="margin-bottom:16px" onclick="modalNuevoProducto()">+ Nuevo producto</button>
+    <div class="card">${!data?.length?'<div class="loading">Sin productos cargados</div>':data.map(p=>{const est=p.stock===0?['danger','Sin stock']:p.stock<=p.stock_minimo?['warn','Bajo']:['green','OK'];return'<div class="list-item" onclick="modalVerProducto(\''+p.id+'\')"><div class="list-item-left"><div class="list-item-title">'+p.nombre+' '+p.presentacion+'ml</div><div class="list-item-sub">Costo: $'+p.costo+' · Venta: $'+p.precio_venta+'</div></div><div class="list-item-right"><span style="font-weight:700">'+p.stock+' u</span><span class="badge badge-'+est[0]+'">'+est[1]+'</span></div></div>'}).join('')}</div>`
+}
+window.modalNuevoProducto=async function(){
+  const {data:ins}=await sb.from('insumos').select('id,nombre,ppu,tipo').eq('activo',true).order('nombre')
+  window._costo=0;window._sugerido=0
+  const oA=ins?.map(i=>'<option value="'+i.id+'" data-ppu="'+i.ppu+'">'+i.nombre+'</option>').join('')||''
+  const oE=ins?.filter(i=>i.tipo==='envase').map(i=>'<option value="'+i.id+'" data-ppu="'+i.ppu+'">'+i.nombre+' $'+i.ppu+'</option>').join('')||''
+  const oT=ins?.filter(i=>i.tipo==='etiqueta').map(i=>'<option value="'+i.id+'" data-ppu="'+i.ppu+'">'+i.nombre+' $'+i.ppu+'</option>').join('')||''
+  abrirModal(`<button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">📦 Nuevo producto</div>
+    <div class="form-group"><label class="form-label">Nombre *</label><input class="form-input" id="p-nom" placeholder="Ej: Detergente Concentrado"></div>
+    <div class="form-group"><label class="form-label">Presentacion (ml/g/u)</label><input class="form-input" id="p-pres" type="number" placeholder="250"></div>
+    <div class="form-group"><label class="form-label">Insumo / Formula principal</label><select class="form-select" id="p-ins" onchange='recalcProd(${JSON.stringify(ins)})'><option value="">Seleccionar</option>${oA}</select></div>
+    <div class="form-group"><label class="form-label">Cantidad que usa (u)</label><input class="form-input" id="p-cins" type="number" placeholder="0" oninput='recalcProd(${JSON.stringify(ins)})'></div>
+    <div class="form-group"><label class="form-label">Envase</label><select class="form-select" id="p-env" onchange='recalcProd(${JSON.stringify(ins)})'><option value="">Sin envase</option>${oE}</select></div>
+    <div class="form-group"><label class="form-label">Etiqueta</label><select class="form-select" id="p-etiq" onchange='recalcProd(${JSON.stringify(ins)})'><option value="">Sin etiqueta</option>${oT}</select></div>
+    <div class="grid-3">
+      <div class="form-group"><label class="form-label">MO %</label><input class="form-input" id="p-mo" type="number" value="20" oninput='recalcProd(${JSON.stringify(ins)})'></div>
+      <div class="form-group"><label class="form-label">Ganancia %</label><input class="form-input" id="p-gan" type="number" value="100" oninput='recalcProd(${JSON.stringify(ins)})'></div>
+      <div class="form-group"><label class="form-label">Envasado %</label><input class="form-input" id="p-envp" type="number" value="20" oninput='recalcProd(${JSON.stringify(ins)})'></div>
+    </div>
+    <div id="p-pprev"></div>
+    <div class="form-group"><label class="form-label">Precio de venta final</label><input class="form-input" id="p-pventa" type="number" placeholder="0"></div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Stock inicial</label><input class="form-input" id="p-stock" type="number" value="0"></div>
+      <div class="form-group"><label class="form-label">Stock minimo</label><input class="form-input" id="p-smin" type="number" value="0"></div>
+    </div>
+    <button class="btn btn-primary" onclick="guardarProducto()">Guardar producto</button>`)
+}
+window.recalcProd=function(ins){
+  const insId=document.getElementById('p-ins')?.value
+  const cins=parseFloat(document.getElementById('p-cins')?.value)||0
+  const mo=parseFloat(document.getElementById('p-mo')?.value)||0
+  const gan=parseFloat(document.getElementById('p-gan')?.value)||0
+  const envp=parseFloat(document.getElementById('p-envp')?.value)||0
+  const insumo=ins?.find(i=>i.id===insId)
+  if(!insumo||!cins){document.getElementById('p-pprev').innerHTML='';return}
+  const cb=insumo.ppu*cins
+  const eS=document.getElementById('p-env'),tS=document.getElementById('p-etiq')
+  const ppE=eS?.value?parseFloat(eS.options[eS.selectedIndex].dataset.ppu)||0:0
+  const ppT=tS?.value?parseFloat(tS.options[tS.selectedIndex].dataset.ppu)||0:0
+  const sub=cb*(1+mo/100+gan/100),conE=sub*(1+envp/100),sug=conE+ppE+ppT
+  window._costo=cb;window._sugerido=sug
+  document.getElementById('p-pprev').innerHTML='<div class="precio-preview"><div class="precio-row"><span>Costo base</span><span>$'+cb.toFixed(2)+'</span></div><div class="precio-row"><span>+ MO + Ganancia</span><span>$'+sub.toFixed(2)+'</span></div><div class="precio-row"><span>+ Envasado</span><span>$'+conE.toFixed(2)+'</span></div><div class="precio-row"><span>+ Envase + Etiqueta</span><span>$'+(ppE+ppT).toFixed(2)+'</span></div><div class="precio-row total"><span>Precio sugerido</span><span>$'+sug.toFixed(2)+'</span></div></div>'
+  if(!document.getElementById('p-pventa').value)document.getElementById('p-pventa').placeholder=sug.toFixed(2)
+}
+window.guardarProducto=async function(){
+  const nom=v('p-nom');if(!nom){toast('error','El nombre es obligatorio');return}
+  const {error}=await sb.from('productos').insert({nombre:nom,presentacion:n('p-pres'),insumo_id:v('p-ins')||null,cantidad_insumo:n('p-cins'),envase_id:v('p-env')||null,etiqueta_id:v('p-etiq')||null,mo_pct:n('p-mo'),ganancia_pct:n('p-gan'),envasado_pct:n('p-envp'),costo:window._costo||0,precio_sugerido:window._sugerido||0,precio_venta:n('p-pventa')||window._sugerido||0,stock:n('p-stock'),stock_minimo:n('p-smin')})
+  if(error){toast('error','Error: '+error.message);return}
+  toast('success','Producto guardado ✅');cerrarModal();renderInventario()
+}
+window.modalVerProducto=async function(id){
+  const {data:p}=await sb.from('productos').select('*').eq('id',id).single()
+  abrirModal(`<button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">📦 ${p.nombre} ${p.presentacion}ml</div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="list-item" style="cursor:default"><span style="color:var(--muted)">Stock</span><strong>${p.stock} u</strong></div>
+      <div class="list-item" style="cursor:default"><span style="color:var(--muted)">Costo</span><strong>$${p.costo}</strong></div>
+      <div class="list-item" style="cursor:default"><span style="color:var(--muted)">P. Sugerido</span><strong>$${p.precio_sugerido}</strong></div>
+      <div class="list-item" style="cursor:default"><span style="color:var(--muted)">P. Venta</span><strong style="color:var(--accent2)">$${p.precio_venta}</strong></div>
+    </div>
+    <div class="section-title">Producir unidades</div>
+    <div class="form-group"><label class="form-label">Cantidad a producir</label><input class="form-input" id="pp-cant" type="number" value="1" min="1"></div>
+    <button class="btn btn-success" onclick="producirProducto('${p.id}','${p.nombre}')">✅ Producir y descontar insumo</button>
+    <button class="btn btn-ghost" style="margin-top:10px" onclick="cerrarModal()">Cancelar</button>`)
+}
+window.producirProducto=async function(id,nom){
+  const cant=n('pp-cant');if(!cant){toast('error','Ingresa una cantidad');return}
+  const {data:p}=await sb.from('productos').select('*,insumos(id,stock,nombre,stock_minimo,ppu)').eq('id',id).single()
+  const nec=p.cantidad_insumo*cant
+  if(p.insumos&&!esInfinito(p.insumos)&&p.insumos.stock<nec){toast('error','Stock insuficiente: '+p.insumos.nombre+' (hay '+p.insumos.stock+' u, necesitas '+nec+')');return}
+  if(p.insumo_id&&!esInfinito(p.insumos))await sb.from('insumos').update({stock:p.insumos.stock-nec}).eq('id',p.insumo_id)
+  await sb.from('productos').update({stock:p.stock+cant}).eq('id',id)
+  await sb.from('producciones_producto').insert({producto_id:id,cantidad:cant})
+  toast('success',cant+' u de "'+nom+'" producidas ✅');cerrarModal();renderInventario()
+}
+
+async function renderCompras(){
+  const {data}=await sb.from('compras').select('*,insumos(nombre)').order('created_at',{ascending:false}).limit(30)
+  document.getElementById('content').innerHTML=`
+    <button class="btn btn-primary" style="margin-bottom:16px" onclick="modalNuevaCompra()">+ Registrar compra</button>
+    <div class="card">${!data?.length?'<div class="loading">Sin compras registradas</div>':data.map(c=>'<div class="list-item" style="cursor:default"><div class="list-item-left"><div class="list-item-title">'+(c.tipo==='insumo'?(c.insumos?.nombre||'Insumo'):(c.descripcion||c.categoria_otro||'Gasto'))+'</div><div class="list-item-sub">'+(c.tipo==='insumo'?c.cantidad+' u · PPG/U $'+Number(c.ppu_nuevo).toFixed(4):c.categoria_otro||'')+' · '+(c.metodo_pago||'')+'</div></div><div class="list-item-right"><span style="font-weight:700">$'+Number(c.monto_total).toLocaleString('es-AR')+'</span><span class="badge badge-'+(c.tipo==='insumo'?'blue':'gray')+'">'+c.tipo+'</span></div></div>').join('')}</div>`
+}
+window.modalNuevaCompra=async function(){
+  const {data:ins}=await sb.from('insumos').select('id,nombre,ppu,stock,stock_minimo').eq('activo',true).order('nombre')
+  abrirModal(`<button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">🛒 Nueva compra</div>
+    <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="co-tipo" onchange="toggleCompra()"><option value="insumo">Insumo</option><option value="otro">Otro gasto</option></select></div>
+    <div id="co-ins-fields">
+      <div class="form-group"><label class="form-label">Insumo</label><select class="form-select" id="co-ins"><option value="">Seleccionar</option>${ins?.map(i=>'<option value="'+i.id+'" data-ppu="'+i.ppu+'" data-stock="'+i.stock+'" data-vol="'+i.stock_minimo+'">'+i.nombre+'</option>').join('')}</select></div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Cantidad comprada</label><input class="form-input" id="co-cant" type="number" placeholder="0" oninput="calcPPU()"></div>
+        <div class="form-group"><label class="form-label">Monto total ($)</label><input class="form-input" id="co-monto" type="number" placeholder="0" oninput="calcPPU()"></div>
+      </div>
+      <div id="co-ppuprev" style="color:var(--accent2);font-size:13px;margin-bottom:14px;font-weight:600"></div>
+    </div>
+    <div id="co-otro-fields" style="display:none">
+      <div class="form-group"><label class="form-label">Categoria</label><select class="form-select" id="co-cat"><option>Ferreteria</option><option>Herramienta</option><option>Accesorio</option><option>Comida</option><option>Transporte</option><option>Otro</option></select></div>
+      <div class="form-group"><label class="form-label">Descripcion</label><input class="form-input" id="co-desc" placeholder="Que compraste?"></div>
+      <div class="form-group"><label class="form-label">Monto ($)</label><input class="form-input" id="co-monto-otro" type="number" placeholder="0"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Proveedor</label><input class="form-input" id="co-prov" placeholder="Opcional"></div>
+    <div class="form-group"><label class="form-label">Metodo de pago</label><select class="form-select" id="co-met"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option><option>Otro</option></select></div>
+    <button class="btn btn-primary" onclick="guardarCompra()">Guardar compra</button>`)
+}
+window.toggleCompra=function(){const t=document.getElementById('co-tipo').value;document.getElementById('co-ins-fields').style.display=t==='insumo'?'block':'none';document.getElementById('co-otro-fields').style.display=t==='otro'?'block':'none'}
+window.calcPPU=function(){const c=parseFloat(document.getElementById('co-cant')?.value)||0;const m=parseFloat(document.getElementById('co-monto')?.value)||0;if(c&&m)document.getElementById('co-ppuprev').textContent='PPG/U calculado: $'+(m/c).toFixed(4)}
+window.guardarCompra=async function(){
+  const tipo=document.getElementById('co-tipo').value,met=document.getElementById('co-met').value,prov=v('co-prov')
+  if(tipo==='insumo'){
+    const insId=document.getElementById('co-ins').value,cant=n('co-cant'),monto=n('co-monto')
+    if(!insId){toast('error','Selecciona un insumo');return}
+    if(!cant||!monto){toast('error','Completa cantidad y monto');return}
+    const ppuNuevo=monto/cant
+    const opt=document.getElementById('co-ins').options[document.getElementById('co-ins').selectedIndex]
+    const stockAct=parseFloat(opt.dataset.stock)||0,ppuAnt=parseFloat(opt.dataset.ppu)||0
+    await sb.from('insumos').update({stock:stockAct+cant,ppu:ppuNuevo,stock_minimo:cant}).eq('id',insId)
+    await sb.from('compras').insert({tipo,insumo_id:insId,cantidad:cant,ppu_anterior:ppuAnt,ppu_nuevo:ppuNuevo,monto_total:monto,metodo_pago:met,proveedor:prov})
+    toast('success','Stock actualizado · PPG/U: $'+ppuNuevo.toFixed(4)+' ✅')
+  }else{
+    const monto=n('co-monto-otro');if(!monto){toast('error','Ingresa el monto');return}
+    await sb.from('compras').insert({tipo,categoria_otro:v('co-cat'),descripcion:v('co-desc'),monto_total:monto,metodo_pago:met,proveedor:prov})
+    toast('success','Gasto registrado ✅')
+  }
+  cerrarModal();renderCompras()
+}
+
+async function renderVentas(){
+  const {data}=await sb.from('ventas').select('*,clientes(nombre,apellido)').order('created_at',{ascending:false}).limit(30)
+  document.getElementById('content').innerHTML=`
+    <button class="btn btn-primary" style="margin-bottom:16px" onclick="modalNuevaVenta()">+ Nueva venta</button>
+    <div class="card">${!data?.length?'<div class="loading">Sin ventas registradas</div>':data.map(vt=>{const cli=vt.clientes?vt.clientes.nombre+' '+(vt.clientes.apellido||''):(vt.cliente_libre||'Consumidor Final');const est=vt.estado_pago==='pagado'?'green':vt.estado_pago==='parcial'?'warn':'danger';return'<div class="list-item" onclick="modalComprobante(\''+vt.id+'\')"><div class="list-item-left"><div class="list-item-title">#'+String(vt.numero).padStart(4,'0')+' · '+cli+'</div><div class="list-item-sub">'+new Date(vt.created_at).toLocaleDateString('es-AR')+'</div></div><div class="list-item-right"><span style="font-weight:700">$'+Number(vt.total).toLocaleString('es-AR')+'</span><span class="badge badge-'+est+'">'+vt.estado_pago+'</span></div></div>'}).join('')}</div>`
+}
+window.modalNuevaVenta=async function(){
+  const [{data:prods},{data:ins},{data:clis}]=await Promise.all([
+    sb.from('productos').select('id,nombre,presentacion,precio_venta,precio_sugerido,stock').eq('activo',true).order('nombre'),
+    sb.from('insumos').select('id,nombre,ppu,stock').eq('activo',true).order('nombre'),
+    sb.from('clientes').select('id,nombre,apellido').order('nombre')
+  ])
+  window._vitems=[]
+  abrirModal(`<button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">💰 Nueva venta</div>
+    <div class="form-group"><label class="form-label">Cliente (opcional)</label>
+      <select class="form-select" id="vt-cli"><option value="">Consumidor Final</option>${clis?.map(c=>'<option value="'+c.id+'">'+c.nombre+' '+(c.apellido||'')+'</option>').join('')}</select>
+      <input class="form-input" id="vt-cli-libre" placeholder="O escribi el nombre..." style="margin-top:8px">
+    </div>
+    <div class="section-title">Agregar items</div>
+    <div class="form-group"><label class="form-label">Tipo</label>
+      <select class="form-select" id="vt-tipo" onchange='toggleVentaTipo(${JSON.stringify(prods)},${JSON.stringify(ins)})'>
+        <option value="producto">Producto terminado</option><option value="insumo">Insumo / Formula</option>
+      </select></div>
+    <div class="form-group"><select class="form-select" id="vt-item">${prods?.map(p=>'<option value="'+p.id+'" data-precio="'+p.precio_venta+'" data-sug="'+p.precio_sugerido+'" data-nom="'+p.nombre+' '+p.presentacion+'ml">'+p.nombre+' '+p.presentacion+'ml — $'+p.precio_venta+'</option>').join('')}</select></div>
+    <div class="grid-2" style="margin-bottom:14px">
+      <div class="form-group" style="margin-bottom:0"><label class="form-label">Cantidad</label><input class="form-input" id="vt-cant" type="number" value="1" min="1"></div>
+      <div class="form-group" style="margin-bottom:0"><label class="form-label">Precio unit. (vacio=lista)</label><input class="form-input" id="vt-precio" type="number" placeholder="Automatico"></div>
+    </div>
+    <button class="btn btn-ghost btn-sm" style="margin-bottom:16px" onclick='addItemVenta(${JSON.stringify(prods)},${JSON.stringify(ins)})'>+ Agregar item</button>
+    <div id="vt-items"></div>
+    <div class="form-group"><label class="form-label">Metodo de pago</label><select class="form-select" id="vt-met"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option><option>Otro</option></select></div>
+    <div class="form-group"><label class="form-label">Estado de pago</label><select class="form-select" id="vt-est" onchange="toggleParcial()"><option value="pagado">Pagado</option><option value="parcial">Pago parcial</option><option value="debe">Debe</option></select></div>
+    <div id="vt-parcial" style="display:none"><div class="form-group"><label class="form-label">Monto pagado</label><input class="form-input" id="vt-mpagado" type="number" placeholder="0"></div></div>
+    <div class="form-group"><label class="form-label">Notas</label><input class="form-input" id="vt-notas" placeholder="Opcional"></div>
+    <div id="vt-total" style="text-align:right;font-size:20px;font-weight:700;color:var(--accent2);margin-bottom:16px"></div>
+    <button class="btn btn-success" onclick="cerrarVenta()">🧾 Cerrar venta</button>`)
+}
+window.toggleVentaTipo=function(prods,ins){const tipo=document.getElementById('vt-tipo').value;const items=tipo==='producto'?prods:ins;document.getElementById('vt-item').innerHTML=items?.map(i=>{const precio=tipo==='producto'?i.precio_venta:i.ppu;const nom=tipo==='producto'?i.nombre+' '+i.presentacion+'ml':i.nombre;return'<option value="'+i.id+'" data-precio="'+precio+'" data-sug="'+(tipo==='producto'?i.precio_sugerido:precio)+'" data-nom="'+nom+'">'+nom+' — $'+precio+'</option>'}).join('')||''}
+window.toggleParcial=function(){document.getElementById('vt-parcial').style.display=document.getElementById('vt-est').value==='parcial'?'block':'none'}
+window.addItemVenta=function(prods,ins){const sel=document.getElementById('vt-item');const opt=sel.options[sel.selectedIndex];if(!opt?.value){toast('error','Selecciona un item');return}const cant=parseFloat(document.getElementById('vt-cant').value)||1;const precioInput=parseFloat(document.getElementById('vt-precio').value);const precioSug=parseFloat(opt.dataset.sug)||0;const precioUnit=precioInput||parseFloat(opt.dataset.precio)||0;window._vitems.push({tipo:document.getElementById('vt-tipo').value,id:opt.value,nombre:opt.dataset.nom||opt.text,cant,precio_sugerido:precioSug,precio_unitario:precioUnit,subtotal:cant*precioUnit,diferencia:(precioUnit-precioSug)*cant});renderItemsVenta()}
+function renderItemsVenta(){const items=window._vitems;const total=items.reduce((a,i)=>a+i.subtotal,0);document.getElementById('vt-items').innerHTML=items.length?'<div class="card" style="margin-bottom:12px">'+items.map((i,idx)=>'<div class="list-item" style="cursor:default"><div class="list-item-left"><div class="list-item-title">'+i.nombre+'</div><div class="list-item-sub">x'+i.cant+' · $'+i.precio_unitario+'</div></div><div class="list-item-right"><span style="font-weight:700">$'+i.subtotal.toLocaleString('es-AR')+'</span><span onclick="window._vitems.splice('+idx+',1);renderItemsVenta()" style="color:var(--danger);cursor:pointer;font-size:12px">quitar</span></div></div>').join('')+'</div>':'';document.getElementById('vt-total').textContent=items.length?'Total: $'+total.toLocaleString('es-AR'):''}
+window.cerrarVenta=async function(){
+  const items=window._vitems;if(!items.length){toast('error','Agrega al menos un item');return}
+  const total=items.reduce((a,i)=>a+i.subtotal,0)
+  const est=document.getElementById('vt-est').value
+  const mpagado=est==='pagado'?total:est==='parcial'?n('vt-mpagado'):0
+  const cliId=document.getElementById('vt-cli').value||null,cliLibre=v('vt-cli-libre')
+  const {data:vt,error}=await sb.from('ventas').insert({cliente_id:cliId,cliente_libre:!cliId?(cliLibre||'Consumidor Final'):null,total,subtotal:total,metodo_pago:document.getElementById('vt-met').value,estado_pago:est,monto_pagado:mpagado,saldo_pendiente:total-mpagado,notas:v('vt-notas')}).select().single()
+  if(error){toast('error','Error al guardar venta');return}
+  await sb.from('venta_items').insert(items.map(i=>({venta_id:vt.id,tipo:i.tipo,producto_id:i.tipo==='producto'?i.id:null,insumo_id:i.tipo==='insumo'?i.id:null,nombre_item:i.nombre,cantidad:i.cant,precio_sugerido:i.precio_sugerido,precio_unitario:i.precio_unitario,subtotal:i.subtotal,diferencia:i.diferencia})))
+  for(const i of items){if(i.tipo==='producto'){const {data:p}=await sb.from('productos').select('stock').eq('id',i.id).single();await sb.from('productos').update({stock:Math.max(0,p.stock-i.cant)}).eq('id',i.id)}else{const {data:ins}=await sb.from('insumos').select('stock,stock_minimo,ppu').eq('id',i.id).single();if(!esInfinito(ins))await sb.from('insumos').update({stock:Math.max(0,ins.stock-i.cant)}).eq('id',i.id)}}
+  toast('success','Venta #'+String(vt.numero).padStart(4,'0')+' — $'+total.toLocaleString('es-AR')+' ✅')
+  cerrarModal();setTimeout(()=>modalComprobante(vt.id),300)
+}
+window.modalComprobante=async function(id){
+  const [{data:vt},{data:items}]=await Promise.all([sb.from('ventas').select('*,clientes(nombre,apellido,cuit_cuil,telefono)').eq('id',id).single(),sb.from('venta_items').select('*').eq('venta_id',id)])
+  const cli=vt.clientes?vt.clientes.nombre+' '+(vt.clientes.apellido||''):(vt.cliente_libre||'Consumidor Final')
+  const fecha=new Date(vt.created_at).toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'})
+  const num=String(vt.numero).padStart(4,'0')
+  const lineas=items.map(i=>'- '+i.nombre_item+' x'+i.cantidad+' - $'+Number(i.subtotal).toLocaleString('es-AR')).join('\n')
+  const txt='*QuimArts - Comprobante #'+num+'*\nFecha: '+fecha+'\nCliente: '+cli+'\n\n'+lineas+'\n\n*Total: $'+Number(vt.total).toLocaleString('es-AR')+'*\nPago: '+vt.metodo_pago+' - '+vt.estado_pago+(vt.saldo_pendiente>0?'\nSaldo pendiente: $'+Number(vt.saldo_pendiente).toLocaleString('es-AR'):'')
+  abrirModal(`<button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title">🧾 Comprobante #${num}</div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="list-item" style="cursor:default"><span style="color:var(--muted)">Cliente</span><strong>${cli}</strong></div>
+      <div class="list-item" style="cursor:default"><span style="color:var(--muted)">Fecha</span><span>${fecha}</span></div>
+      <div class="list-item" style="cursor:default"><span style="color:var(--muted)">Pago</span><span>${vt.metodo_pago} · <span class="badge badge-${vt.estado_pago==='pagado'?'green':vt.estado_pago==='parcial'?'warn':'danger'}">${vt.estado_pago}</span></span></div>
+      ${items.map(i=>'<div class="list-item" style="cursor:default"><span>'+i.nombre_item+' x'+i.cantidad+'</span><strong>$'+Number(i.subtotal).toLocaleString('es-AR')+'</strong></div>').join('')}
+      <div class="list-item" style="cursor:default;border-top:1px solid var(--border)"><strong>Total</strong><strong style="color:var(--accent2);font-size:18px">$${Number(vt.total).toLocaleString('es-AR')}</strong></div>
+      ${vt.saldo_pendiente>0?'<div class="list-item" style="cursor:default"><span style="color:var(--danger)">Saldo pendiente</span><strong style="color:var(--danger)">$'+Number(vt.saldo_pendiente).toLocaleString('es-AR')+'</strong></div>':''}
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-success" onclick="window.open('https://wa.me/?text='+encodeURIComponent(waTxt),'_blank')">📱 WhatsApp</button>
+      <button class="btn btn-primary" onclick="window.open('mailto:?subject=Comprobante QuimArts %23${num}&body='+encodeURIComponent(waTxt),'_blank')">📧 Mail</button>
+    </div>`)
+  window.waTxt=txt
+}
+
+async function renderClientes(){
+  const {data}=await sb.from('clientes').select('*').order('nombre')
+  document.getElementById('content').innerHTML=`<button class="btn btn-primary" style="margin-bottom:16px" onclick="modalNuevoCliente()">+ Nuevo cliente</button><div class="card">${!data?.length?'<div class="loading">Sin clientes</div>':data.map(c=>'<div class="list-item" style="cursor:default"><div class="list-item-left"><div class="list-item-title">'+(c.nombre||'')+' '+(c.apellido||'')+'</div><div class="list-item-sub">'+(c.telefono||'')+' '+(c.cuit_cuil?'· '+c.cuit_cuil:'')+'</div></div></div>').join('')}</div>`
+}
+window.modalNuevoCliente=function(){abrirModal(`<button class="modal-close" onclick="cerrarModal()">✕</button><div class="modal-title">👤 Nuevo cliente</div><div class="grid-2"><div class="form-group"><label class="form-label">Nombre</label><input class="form-input" id="cl-nom"></div><div class="form-group"><label class="form-label">Apellido</label><input class="form-input" id="cl-ape"></div></div><div class="form-group"><label class="form-label">Telefono</label><input class="form-input" id="cl-tel" type="tel"></div><div class="form-group"><label class="form-label">Email</label><input class="form-input" id="cl-mail" type="email"></div><div class="form-group"><label class="form-label">Direccion</label><input class="form-input" id="cl-dir"></div><div class="grid-2"><div class="form-group"><label class="form-label">DNI</label><input class="form-input" id="cl-dni"></div><div class="form-group"><label class="form-label">CUIT/CUIL</label><input class="form-input" id="cl-cuit"></div></div><button class="btn btn-primary" onclick="guardarCliente()">Guardar cliente</button>`)}
+window.guardarCliente=async function(){const {error}=await sb.from('clientes').insert({nombre:v('cl-nom'),apellido:v('cl-ape'),telefono:v('cl-tel'),email:v('cl-mail'),direccion:v('cl-dir'),dni:v('cl-dni'),cuit_cuil:v('cl-cuit')});if(error){toast('error','Error al guardar');return}toast('success','Cliente guardado ✅');cerrarModal();renderClientes()}
+
+function renderReportes(){document.getElementById('content').innerHTML='<div class="card"><div style="text-align:center;padding:40px"><div style="font-size:40px;margin-bottom:12px">📈</div><div style="font-weight:700;margin-bottom:8px">Reportes</div><div style="color:var(--muted);font-size:13px">Lo definimos en la proxima etapa</div></div></div>'}
+function renderMas(){document.getElementById('content').innerHTML='<div class="card">'+'[{icon:"🛒",label:"Compras",page:"compras"},{icon:"📦",label:"Inventario",page:"inventario"},{icon:"👥",label:"Clientes",page:"clientes"},{icon:"📈",label:"Reportes",page:"reportes"}]'.replace(/\[|\]/g,'').split('},{').map(s=>{const o=JSON.parse('{'+s.replace(/^\{/,'').replace(/\}$/,'')+'}');return'<div class="list-item" onclick="navegar(\''+o.page+'\')"><div class="list-item-title">'+o.icon+' '+o.label+'</div><span style="color:var(--accent);font-size:18px">›</span></div>'}).join('')+'</div>'}
+
+function abrirModal(html){document.getElementById('modal-content').innerHTML=html;document.getElementById('modal-overlay').classList.add('open')}
+window.cerrarModal=function(e){if(!e||e.target===document.getElementById('modal-overlay'))document.getElementById('modal-overlay').classList.remove('open')}
+window.toast=function(tipo,msg){const iconos={success:'✅',error:'❌',warn:'⚠️',info:'ℹ️'};const wrap=document.getElementById('toast-wrap');const t=document.createElement('div');t.className='toast '+tipo;t.innerHTML='<span style="font-size:16px">'+(iconos[tipo]||'ℹ️')+'</span><span style="font-size:13px">'+msg+'</span>';wrap.appendChild(t);setTimeout(()=>t.remove(),3500)}
+
+renderDashboard()
+</script>
+</body>
+</html>
